@@ -61,11 +61,11 @@
             ]
         }
     ],
-    "description": "KRunner plugin for Mistral AI Le Chat that allows you to send prompts to Mistral AI directly from KRunner and view responses in a preview panel with full markdown rendering.",
+    "description": "KRunner plugin for Mistral AI Vibe that allows you to send prompts to Mistral AI directly from KRunner and view responses in a preview panel with full markdown rendering.",
     "metadata": {
         "name": "Katten",
-        "summary": "Mistral AI Le Chat integration for KRunner",
-        "description": "Katten is a KDE Plasma 6 KRunner plugin that allows you to send prompts to Mistral AI's Le Chat service directly from KRunner (Alt+Space). It features a preview panel with full markdown rendering support for tables, code blocks, lists, and more.",
+        "summary": "Mistral AI Vibe integration for KRunner",
+        "description": "Katten is a KDE Plasma 6 KRunner plugin that allows you to send prompts to Mistral AI's Vibe service directly from KRunner (Alt+Space). It features a preview panel with full markdown rendering support for tables, code blocks, lists, and more.",
         "tags": ["kde", "plasma", "krunner", "ai", "mistral", "lechat", "chat"],
         "license": "GPL-3.0+",
         "url": {

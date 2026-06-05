@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Katten - Unofficial Mistral Le Chat plugin for KRunner
+Katten - Unofficial Mistral Vibe plugin for KRunner
 
 Copyright 2026 Emilio González Longoria.
 Katten is distributed under the terms of the GNU General Public License v3.
@@ -54,7 +54,7 @@ ICON_PATH = PLUGIN_DIR / "katten-icon.svg"
 LOG_FILE = CONFIG_DIR / "history.xml"
 
 # Default trigger keywords
-DEFAULT_KEYWORDS = ["katten", "lechat", "lc", "mistral"]
+DEFAULT_KEYWORDS = ["katten", "lechat", "lc", "mistral", "vibe", "mv"]
 
 # Default model (used when web search is disabled)
 DEFAULT_MODEL = "mistral-large-latest"
@@ -153,7 +153,7 @@ def mistral_request(endpoint, method="GET", data=None):
 def list_agents():
     """List agents created via the Mistral API.
     
-    NOTE: Agents created in the Le Chat web UI (chat.mistral.ai) are NOT
+    NOTE: Agents created in the Vibe web UI (chat.mistral.ai) are NOT
     accessible through the API — they live in a separate system.
     Only agents created programmatically via POST /v1/agents are returned here.
     """
@@ -170,7 +170,7 @@ def list_agents():
 
 
 def get_or_create_websearch_agent():
-    """Get or create a web search agent for Le Chat queries."""
+    """Get or create a web search agent for Vibe queries."""
     config = load_config()
     
     # Check if we have a cached agent
@@ -314,8 +314,8 @@ def send_prompt(prompt, agent_id=None, use_web_search=True):
             response, error = send_prompt_simple(prompt)
             return response, error, None
         response, error, conv_id = send_prompt_with_conversation(prompt, ws_agent_id)
-        # The conversation ID belongs to the API account, not the Le Chat web
-        # account, so we can't deep-link to it. Always open the Le Chat home.
+        # The conversation ID belongs to the API account, not the Vibe web
+        # account, so we can't deep-link to it. Always open the Vibe home.
         conv_url = "https://chat.mistral.ai/"
         return response, error, conv_url
     
@@ -397,7 +397,7 @@ def log_conversation(prompt: str, response: str, web_search: bool):
         <timestamp>ISO 8601</timestamp>
         <prompt>user prompt</prompt>
         <web_search>yes|no</web_search>
-        <response>Le Chat's answer</response>
+        <response>Vibe's answer</response>
       </entry>
       ...
     </history>
@@ -670,13 +670,13 @@ class Runner(dbus.service.Object):
                 {"subtext": dbus.String(f"Now using {DEFAULT_MODEL} with web search", variant_level=1)}
             )]
 
-        # Handle "open" command - open Le Chat in browser
+        # Handle "open" command - open Vibe in browser
         if prompt.lower() == "open":
             success, error = open_browser_url("https://chat.mistral.ai/chat")
             if success:
                 return [(
                     "open_browser",
-                    "Opening Le Chat in default browser",
+                    "Opening Vibe in default browser",
                     icon,
                     100,
                     1.0,
@@ -699,7 +699,7 @@ class Runner(dbus.service.Object):
             if success:
                 return [(
                     "open_browser",
-                    f"Opening Le Chat in {browser_arg}",
+                    f"Opening Vibe in {browser_arg}",
                     icon,
                     100,
                     1.0,
@@ -1046,7 +1046,7 @@ class Runner(dbus.service.Object):
             icon_path = get_icon()
             
             iface.Notify(
-                "Le Chat",
+                "Vibe",
                 0,
                 icon_path,
                 title,
@@ -1060,7 +1060,7 @@ class Runner(dbus.service.Object):
                 urgency = "critical" if critical else "normal"
                 timeout_arg = ["-t", str(timeout)] if timeout > 0 else []
                 subprocess.Popen(
-                    ["notify-send", "-u", urgency, "-a", "Le Chat"] + timeout_arg + [title, message],
+                    ["notify-send", "-u", urgency, "-a", "Vibe"] + timeout_arg + [title, message],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL
                 )
@@ -1078,7 +1078,7 @@ def main():
         loop = GLib.MainLoop()
         loop.run()
     except Exception as e:
-        print(f"Failed to start Le Chat KRunner plugin: {e}", file=sys.stderr)
+        print(f"Failed to start Vibe KRunner plugin: {e}", file=sys.stderr)
         sys.exit(1)
 
 

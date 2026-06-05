@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Preview panel for Katten - Unofficial Mistral Le Chat plugin for KRunner.
+Preview panel for Katten - Unofficial Mistral Vibe plugin for KRunner.
 
 Copyright 2026 Emilio González Longoria.
 Katten is distributed under the terms of the GNU General Public License v3.
@@ -315,7 +315,7 @@ class PreviewPanel(QMainWindow):
         self._open_btn.clicked.connect(self._open_browser)
         self._open_btn.setToolTip(
             "Open chat.mistral.ai in your default browser.\n"
-            "Note: API conversations are separate from your Le Chat web account."
+            "Note: API conversations are separate from your Vibe web account."
         )
         btn_row.addWidget(self._open_btn)
 

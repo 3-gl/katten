@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Configuration utility for Katten - Unofficial Mistral Le Chat plugin for KRunner.
+Configuration utility for Katten - Unofficial Mistral Vibe plugin for KRunner.
 
 Copyright 2026 Emilio González Longoria.
 Katten is distributed under the terms of the GNU General Public License v3.
@@ -177,7 +177,7 @@ def prompt_api_key() -> str | None:
             ok, err = test_api_key(key_to_test)
 
         if ok:
-            print(f"   {G}[OK]{NC} API key verified — Le Chat is ready!")
+            print(f"   {G}[OK]{NC} API key verified — Vibe is ready!")
             print()
             return key_to_test
         else:

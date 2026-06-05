@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Katten - unofficial Mistral Le Chat plugin for KRunner
+# Katten - unofficial Mistral Vibe plugin for KRunner
 # Uninstaller
 #
 

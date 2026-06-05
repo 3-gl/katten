@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Katten - Unofficial Mistral Le Chat plugin for KRunner
+# Katten - Unofficial Mistral Vibe plugin for KRunner
 # Copyright (C) 2026  Emilio González Longoria
 #
 # Installer script - supports Debian/Ubuntu (apt), Fedora (dnf), openSUSE (zypper), Arch/Manjaro (pacman)

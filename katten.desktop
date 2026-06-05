@@ -3,7 +3,7 @@ Type=Service
 X-KDE-ServiceTypes=Plasma/Runner
 
 Name=Katten (Mistral AI)
-Comment=Send prompts to Mistral AI and get responses in KRunner - unofficial Le Chat plugin
+Comment=Send prompts to Mistral AI and get responses in KRunner - unofficial Vibe plugin
 Icon=katten-icon
 
 X-KDE-PluginInfo-Name=katten
@@ -17,5 +17,5 @@ X-Plasma-DBusRunner-Service=org.kde.katten
 X-Plasma-DBusRunner-Path=/katten
 
 X-Plasma-Runner-Min-Letter-Count=2
-X-Plasma-Runner-Syntaxes=katten :q:,lechat :q:,lc :q:,mistral :q:,katten web :q:,katten agents
-X-Plasma-Runner-Syntax-Descriptions=Ask Katten a question,Alternative keyword,Short alias,Alternative keyword,Force web search,List custom agents
+X-Plasma-Runner-Syntaxes=katten :q:,lechat :q:,lc :q:,mistral :q:,vibe :q:,mv :q:,katten web :q:,katten agents
+X-Plasma-Runner-Syntax-Descriptions=Ask Katten a question,Alternative keyword,Short alias,Alternative keyword,Vibe keyword,Short Vibe alias,Force web search,List custom agents

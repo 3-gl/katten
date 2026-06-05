@@ -1,6 +1,6 @@
 Katten v3.0 beta
 ================
-Unofficial Mistral Le Chat plugin for KRunner
+Unofficial Mistral Vibe plugin for KRunner
 
 Developed by Emilio Longoria.
 This plugin is not affiliated with Mistral AI or its products.
@@ -9,14 +9,14 @@ This plugin is not affiliated with Mistral AI or its products.
 DESCRIPTION
 -----------
 Katten is a KDE Plasma 6 KRunner plugin that lets you send prompts to
-Mistral AI's Le Chat and see responses in a beautiful preview panel
+Mistral AI's Vibe and see responses in a beautiful preview panel
 with full markdown rendering (tables, code blocks, etc.).
 
 
 FEATURES
 --------
 - Send prompts to Mistral AI directly from KRunner
-- Web search enabled by default (Le Chat searches the internet)
+- Web search enabled by default (Vibe searches the internet)
 - Preview panel with:
   - Background blur and transparency
   - Full markdown rendering (headers, code blocks, tables, lists, links)
@@ -167,7 +167,7 @@ Responses are displayed in a native preview panel with KDE Plasma integration:
   - Bulleted and numbered lists
   - Clickable hyperlinks
 - Copy button: Copy the full response to clipboard
-- Open in Browser button: Opens Le Chat in your default browser
+- Open in Browser button: Opens Vibe in your default browser
 - Close with: Spacebar, Escape, or the close button
 
 If PyQt6/PyQt5 is not available, kdialog is used as a fallback.
@@ -201,7 +201,7 @@ Preview panel not showing blur:
   - Falls back to semi-transparent background if blur unavailable
 
 "Not recognized" / Account features:
-  The Mistral API does not have access to your Le Chat web account's
+  The Mistral API does not have access to your Vibe web account's
   personal data or conversation history. This is by design for privacy.
   However, you can use custom agents created at console.mistral.ai
 
@@ -261,7 +261,7 @@ DISCLAIMER
 ----------
 Katten is an unofficial, community-developed plugin.
 It is NOT affiliated with, endorsed by, or sponsored by Mistral AI.
-"Le Chat" and "Mistral" are trademarks of Mistral AI.
+"Vibe" and "Mistral" are trademarks of Mistral AI.
 
 Use of this plugin requires a valid Mistral AI API key and is subject
 to Mistral AI's terms of service and usage policies.

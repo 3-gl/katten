@@ -78,7 +78,7 @@ class FirstRunPanel(QDialog):
 
         # Description
         desc = QLabel(
-            "Katten connects KRunner to Mistral AI's Le Chat service."
+            "Katten connects KRunner to Mistral AI's Vibe service."
         )
         desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
         desc.setWordWrap(True)
@@ -87,7 +87,7 @@ class FirstRunPanel(QDialog):
         # Info about API key
         info = QLabel(
             "<small>An API key is <b>not required</b> to use the plugin, "
-            "but may be needed to access all of Le Chat's functions.</small>"
+            "but may be needed to access all of Vibe's functions.</small>"
         )
         info.setAlignment(Qt.AlignmentFlag.AlignCenter)
         info.setWordWrap(True)
