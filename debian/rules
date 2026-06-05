@@ -6,6 +6,7 @@ override_dh_auto_install:
 	# Install plugin files
 	install -D -m 755 katten.py debian/krunner-lechat/usr/share/katten/katten.py
 	install -D -m 755 quicklook_panel.py debian/krunner-lechat/usr/share/katten/quicklook_panel.py
+	install -D -m 755 first_run_panel.py debian/krunner-lechat/usr/share/katten/first_run_panel.py
 	install -D -m 644 katten-icon.svg debian/krunner-lechat/usr/share/katten/katten-icon.svg
 	install -D -m 644 katten-icon.svg debian/krunner-lechat/usr/share/icons/hicolor/scalable/apps/katten-icon.svg
 	install -D -m 644 katten.desktop debian/krunner-lechat/usr/share/krunner/dbusplugins/katten.desktop

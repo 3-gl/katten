@@ -22,6 +22,7 @@
             "build-commands": [
                 "install -Dm755 katten.py /app/share/katten/katten.py",
                 "install -Dm755 quicklook_panel.py /app/share/katten/quicklook_panel.py",
+                "install -Dm755 first_run_panel.py /app/share/katten/first_run_panel.py",
                 "install -Dm644 katten-icon.svg /app/share/katten/katten-icon.svg",
                 "install -Dm644 katten-icon.svg /app/share/icons/hicolor/scalable/apps/katten-icon.svg",
                 "install -Dm644 katten.desktop /app/share/krunner/dbusplugins/katten.desktop",
@@ -36,6 +37,10 @@
                 {
                     "type": "file",
                     "path": "quicklook_panel.py"
+                },
+                {
+                    "type": "file",
+                    "path": "first_run_panel.py"
                 },
                 {
                     "type": "file",

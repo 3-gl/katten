@@ -781,13 +781,16 @@ class Runner(dbus.service.Object):
         
         api_key = get_api_key()
         if not api_key:
+            # Launch first-run panel as a separate process
+            self._launch_first_run_panel()
+            # Return a loading state
             return [(
-                "no_key",
-                "Mistral API key not configured",
-                "dialog-warning",
+                "first_run",
+                "Katten - Setup Required",
+                icon,
                 100,
                 1.0,
-                {"subtext": dbus.String("Run: krunner-lechat-config to set your API key", variant_level=1)}
+                {"subtext": dbus.String("Please enter your API key in the configuration panel", variant_level=1)}
             )]
 
         use_web = force_web if force_web is not None else config.get("web_search_enabled", True)
@@ -976,6 +979,32 @@ class Runner(dbus.service.Object):
                     prompt,
                     self.last_conversation_url,
                 )
+
+    def _launch_first_run_panel(self):
+        """Launch the first-run configuration panel as a separate process."""
+        try:
+            # Try to launch the first-run panel script
+            panel_script = PLUGIN_DIR / "first_run_panel.py"
+            if panel_script.exists():
+                subprocess.Popen(
+                    [sys.executable, str(panel_script)],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            else:
+                # Fallback: try to find it in the script directory
+                script_dir = Path(__file__).parent
+                fallback_script = script_dir / "first_run_panel.py"
+                if fallback_script.exists():
+                    subprocess.Popen(
+                        [sys.executable, str(fallback_script)],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+        except Exception as e:
+            # Log the error but don't block the plugin
+            import logging
+            logging.getLogger("katten").error(f"Failed to launch first-run panel: {e}")
 
     def _copy_to_clipboard(self, text):
         """Copy text to clipboard using xclip or wl-copy."""

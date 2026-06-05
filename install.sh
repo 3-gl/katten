@@ -141,6 +141,12 @@ if [ -f "$SCRIPT_DIR/quicklook_panel.py" ]; then
     chmod +x "$PLUGIN_DIR/quicklook_panel.py"
 fi
 
+# First-run panel
+if [ -f "$SCRIPT_DIR/first_run_panel.py" ]; then
+    cp "$SCRIPT_DIR/first_run_panel.py" "$PLUGIN_DIR/"
+    chmod +x "$PLUGIN_DIR/first_run_panel.py"
+fi
+
 # Icons
 if [ -f "$SCRIPT_DIR/katten-icon.svg" ]; then
     cp "$SCRIPT_DIR/katten-icon.svg" "$PLUGIN_DIR/"
