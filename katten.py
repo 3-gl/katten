@@ -20,6 +20,7 @@ Version 3.0 beta:
 - Opens conversation in default browser
 - XML conversation history logging
 - Custom SVG icon
+- Uses system python3-markdown package (no venv required)
 """
 
 import os
@@ -51,7 +52,6 @@ CONFIG_FILE = CONFIG_DIR / "config.json"
 PLUGIN_DIR = Path.home() / ".local" / "share" / "katten"
 ICON_PATH = PLUGIN_DIR / "katten-icon.svg"
 LOG_FILE = CONFIG_DIR / "history.xml"
-VENV_PYTHON = PLUGIN_DIR / "venv" / "bin" / "python3"
 
 # Default trigger keywords
 DEFAULT_KEYWORDS = ["katten", "lechat", "lc", "mistral"]
@@ -579,8 +579,7 @@ def show_preview_panel(title, content, prompt="", conversation_url=""):
         log_fh = subprocess.DEVNULL
 
     try:
-        # Use system Python (for PyQt6) but inject venv site-packages for markdown
-        # The panel script handles adding the venv to sys.path internally
+        # Use system Python with system-wide python3-markdown package
         return subprocess.Popen(
             [
                 sys.executable, str(panel_script),

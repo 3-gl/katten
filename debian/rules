@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_auto_install:
+	# Install plugin files
+	install -D -m 755 katten.py debian/krunner-lechat/usr/share/katten/katten.py
+	install -D -m 755 quicklook_panel.py debian/krunner-lechat/usr/share/katten/quicklook_panel.py
+	install -D -m 644 katten-icon.svg debian/krunner-lechat/usr/share/katten/katten-icon.svg
+	install -D -m 644 katten-icon.svg debian/krunner-lechat/usr/share/icons/hicolor/scalable/apps/katten-icon.svg
+	install -D -m 644 katten.desktop debian/krunner-lechat/usr/share/krunner/dbusplugins/katten.desktop
+	install -D -m 644 org.kde.katten.service debian/krunner-lechat/usr/share/dbus-1/services/org.kde.katten.service
+	install -D -m 755 katten-config debian/krunner-lechat/usr/bin/katten-config

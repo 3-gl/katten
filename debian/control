@@ -1,0 +1,24 @@
+Source: krunner-lechat
+Section: kde
+Priority: optional
+Maintainer: Emilio Longoria <emilio@longoria.dev>
+Build-Depends: debhelper (>= 11)
+Standards-Version: 4.6.0
+Homepage: https://github.com/emilio-longoria/katten
+Rules-Requires-Root: no
+
+Package: krunner-lechat
+Architecture: all
+Depends: ${misc:Depends}, python3, python3-dbus, python3-gi, python3-pyqt6 | python3-pyqt5, xclip | wl-copy, python3-markdown
+Description: KRunner plugin for Mistral AI Le Chat
+ Katten is a KDE Plasma 6 KRunner plugin that allows you to send prompts
+ to Mistral AI's Le Chat service directly from KRunner (Alt+Space).
+ .
+ Features:
+  * Send prompts to Mistral AI with web search capability
+  * Preview panel with full markdown rendering (tables, code blocks, etc.)
+  * Support for custom Mistral agents
+  * Conversation history logged to XML
+  * Multiple trigger keywords: katten, lechat, lc, mistral
+ .
+ This plugin is unofficial and not affiliated with Mistral AI.

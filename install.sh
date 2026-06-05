@@ -80,6 +80,18 @@ echo -e "${BLUE}Checking dependencies...${NC}"
 DETECT_DISTRO
 echo "Detected: $DISTRO"
 
+# Define markdown package name for each distro
+if [ "$DISTRO" = "arch" ]; then
+    PYTHON_MARKDOWN="python-markdown"
+elif [ "$DISTRO" = "fedora" ]; then
+    PYTHON_MARKDOWN="python3-markdown"
+elif [ "$DISTRO" = "opensuse" ]; then
+    PYTHON_MARKDOWN="python3-markdown"
+else
+    # Debian/Ubuntu
+    PYTHON_MARKDOWN="python3-markdown"
+fi
+
 MISSING=()
 python3 -c "import dbus" 2>/dev/null || MISSING+=("$PYTHON_DBUS")
 python3 -c "from gi.repository import GLib" 2>/dev/null || MISSING+=("$PYTHON_GOBJECT")
@@ -88,6 +100,8 @@ PYQT_OK=false
 python3 -c "from PyQt6.QtWidgets import QApplication" 2>/dev/null && PYQT_OK=true
 python3 -c "from PyQt5.QtWidgets import QApplication" 2>/dev/null && PYQT_OK=true
 [ "$PYQT_OK" = false ] && MISSING+=("$PYTHON_PYQT6")
+
+python3 -c "import markdown" 2>/dev/null || MISSING+=("$PYTHON_MARKDOWN")
 
 command -v kdialog &>/dev/null || echo -e "${YELLOW}kdialog not found (optional fallback)${NC}"
 command -v xclip &>/dev/null || command -v wl-copy &>/dev/null || MISSING+=("$XCLIP")
@@ -150,17 +164,6 @@ chmod +x "$BIN_DIR/katten-config"
 echo -e "${BLUE}Updating icon cache...${NC}"
 gtk-update-icon-cache -f "${ICON_DIR}" 2>/dev/null || true
 
-# --- PYTHON VENV (for markdown library) ---
-echo -e "${BLUE}Setting up Python virtual environment...${NC}"
-VENV_DIR="$PLUGIN_DIR/venv"
-
-if [ ! -d "$VENV_DIR" ]; then
-    python3 -m venv "$VENV_DIR" || { echo -e "${RED}Failed to create venv${NC}"; exit 1; }
-fi
-
-"$VENV_DIR/bin/pip" install --quiet markdown 2>/dev/null || \
-    echo -e "${YELLOW}Markdown library installation failed (optional, text fallback will be used)${NC}"
-
 # --- RESTART SERVICES ---
 echo -e "${BLUE}Stopping any existing plugin...${NC}"
 pkill -f "katten.py" 2>/dev/null || true
@@ -183,6 +186,9 @@ echo
 echo "   Run: katten-config"
 echo
 echo "   (If command not found, use: $BIN_DIR/katten-config)"
+echo
+echo "For full markdown rendering support (tables, code blocks, etc.):"
+echo -e "   Ensure python3-markdown is installed: ${YELLOW}sudo apt install python3-markdown${NC}"
 echo
 echo "Then test in KRunner (Alt+Space):"
 echo -e "   ${YELLOW}katten Hello, how are you?${NC}"

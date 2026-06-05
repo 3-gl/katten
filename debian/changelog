@@ -1,0 +1,10 @@
+krunner-lechat (3.0~beta1-1) unstable; urgency=medium
+
+  * Initial release for Debian/Ubuntu.
+  * Uses system python3-markdown instead of venv for better distribution support.
+  * Full markdown rendering support (tables, code blocks, lists).
+  * Web search enabled by default via Mistral API agents.
+  * Multiple trigger keywords: katten, lechat, lc, mistral.
+  * Preview panel with KDE Plasma integration.
+
+ -- Emilio Longoria <emilio@longoria.dev>  Fri, 05 Jun 2026 23:00:00 +0000

@@ -84,21 +84,8 @@ except ImportError as e:
         sys.exit(1)
 
 # ---------------------------------------------------------------------------
-# Markdown → HTML (using markdown library from venv)
+# Markdown → HTML (using system markdown library)
 # ---------------------------------------------------------------------------
-
-# Add venv site-packages to path so we can import markdown
-# The venv is at ~/.local/share/katten/venv/
-_venv_site = Path.home() / ".local" / "share" / "katten" / "venv" / "lib"
-if _venv_site.exists():
-    # Find python version folder (e.g., python3.10, python3.11)
-    for _pydir in _venv_site.iterdir():
-        if _pydir.is_dir() and _pydir.name.startswith("python"):
-            _site_packages = _pydir / "site-packages"
-            if _site_packages.exists() and str(_site_packages) not in sys.path:
-                sys.path.insert(0, str(_site_packages))
-                log.info("Added venv site-packages to path: %s", _site_packages)
-            break
 
 try:
     import markdown as _md_lib
@@ -107,6 +94,9 @@ try:
 except ImportError as _e:
     HAS_MARKDOWN = False
     log.warning("markdown library not available (%s) - will use plain text fallback", _e)
+    # Log a user-friendly error message
+    log.error("MARKDOWN NOT AVAILABLE: For full markdown rendering (tables, code blocks, etc.), "
+               "please install: sudo apt install python3-markdown")
 
 
 def markdown_to_html(text: str) -> str:
@@ -125,9 +115,12 @@ def markdown_to_html(text: str) -> str:
             # Fallback to plain text with line breaks
             from html import escape
             return '<p>' + escape(text).replace('\n\n', '</p><p>').replace('\n', '<br>') + '</p>'
-    # No markdown library - show plain text with line breaks
+    # No markdown library - show plain text with line breaks AND a user-visible note
     from html import escape
-    return '<p>' + escape(text).replace('\n\n', '</p><p>').replace('\n', '<br>') + '</p>'
+    plain_html = '<p>' + escape(text).replace('\n\n', '</p><p>').replace('\n', '<br>') + '</p>'
+    # Add a subtle note about markdown not being available
+    plain_html += '<p><small><i>Note: For full markdown support, install python3-markdown package</i></small></p>'
+    return plain_html
 
 
 # ---------------------------------------------------------------------------

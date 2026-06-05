@@ -1,0 +1,74 @@
+{
+    "app-id": "org.kde.katten",
+    "runtime": "org.kde.Platform",
+    "runtime-version": "6.6",
+    "sdk": "org.kde.Sdk",
+    "command": "katten.py",
+    "finish-args": [
+        "--share=ipc",
+        "--share=network",
+        "--socket=wayland",
+        "--socket=x11",
+        "--filesystem=xdg-config/katten:create",
+        "--filesystem=~/.local/share/katten:create",
+        "--talk-name=org.freedesktop.Notifications",
+        "--talk-name=org.kde.krunner1",
+        "--dbus=session"
+    ],
+    "modules": [
+        {
+            "name": "katten",
+            "buildsystem": "simple",
+            "build-commands": [
+                "install -Dm755 katten.py /app/share/katten/katten.py",
+                "install -Dm755 quicklook_panel.py /app/share/katten/quicklook_panel.py",
+                "install -Dm644 katten-icon.svg /app/share/katten/katten-icon.svg",
+                "install -Dm644 katten-icon.svg /app/share/icons/hicolor/scalable/apps/katten-icon.svg",
+                "install -Dm644 katten.desktop /app/share/krunner/dbusplugins/katten.desktop",
+                "install -Dm644 org.kde.katten.service /app/share/dbus-1/services/org.kde.katten.service",
+                "install -Dm755 katten-config /app/bin/katten-config"
+            ],
+            "sources": [
+                {
+                    "type": "file",
+                    "path": "katten.py"
+                },
+                {
+                    "type": "file",
+                    "path": "quicklook_panel.py"
+                },
+                {
+                    "type": "file",
+                    "path": "katten-config"
+                },
+                {
+                    "type": "file",
+                    "path": "katten.desktop"
+                },
+                {
+                    "type": "file",
+                    "path": "org.kde.katten.service"
+                },
+                {
+                    "type": "file",
+                    "path": "katten-icon.svg"
+                }
+            ]
+        }
+    ],
+    "description": "KRunner plugin for Mistral AI Le Chat that allows you to send prompts to Mistral AI directly from KRunner and view responses in a preview panel with full markdown rendering.",
+    "metadata": {
+        "name": "Katten",
+        "summary": "Mistral AI Le Chat integration for KRunner",
+        "description": "Katten is a KDE Plasma 6 KRunner plugin that allows you to send prompts to Mistral AI's Le Chat service directly from KRunner (Alt+Space). It features a preview panel with full markdown rendering support for tables, code blocks, lists, and more.",
+        "tags": ["kde", "plasma", "krunner", "ai", "mistral", "lechat", "chat"],
+        "license": "GPL-3.0+",
+        "url": {
+            "homepage": "https://github.com/emilio-longoria/katten"
+        }
+    },
+    "required-versions": {
+        "org.kde.Platform": "6.6",
+        "org.kde.Sdk": "6.6"
+    }
+}

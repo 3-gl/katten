@@ -28,30 +28,35 @@ FEATURES
 - Support for custom Mistral agents from your account
 - Custom SVG plugin icon
 - Conversation history logged to XML file
-- Isolated Python venv with markdown library (no system-wide install needed)
+- Uses system python3-markdown package (no isolated venv needed)
 
 
 REQUIREMENTS
 ------------
-- KDE Plasma 6.x (Kubuntu 24.04 or later)
+- KDE Plasma 6.x (Kubuntu 24.04, KDE neon, or later)
 - Python 3.x
 - python3-dbus package
 - python3-gi package (GObject Introspection)
-- python3-pyqt6 package (for preview panel)
-- Mistral AI API key (get one at https://console.mistral.ai/api-keys)
+- python3-pyqt6 or python3-pyqt5 package (for preview panel)
+- python3-markdown package (for full markdown rendering)
+- xclip or wl-copy (for clipboard support)
 
 Optional:
-- xclip or wl-copy (for clipboard support)
-- kdialog (fallback if PyQt6 is unavailable)
+- kdialog (fallback if PyQt6/PyQt5 is unavailable)
 - xprop (for KWin blur effect)
-
-Note: The markdown library is automatically installed in an isolated
-Python venv at ~/.local/share/katten/venv/ during setup.
-No system-wide Python packages are needed!
 
 
 INSTALLATION
 ------------
+
+### Method 1: From Debian/Ubuntu Package (Recommended)
+
+If a .deb package is available:
+
+   sudo apt install ./krunner-lechat_*.deb
+
+### Method 2: Manual Installation
+
 1. Open a terminal in this folder
 
 2. Make the install script executable:
@@ -60,11 +65,52 @@ INSTALLATION
 3. Run the installer:
    ./install.sh
 
+   This will:
+   - Check and install missing dependencies
+   - Copy files to ~/.local/share/katten/
+   - Register the plugin with KRunner
+   - Set up the D-Bus service
+   - Install the icon
+
 4. Configure your API key:
    katten-config
 
-5. Test it! Open KRunner (Alt+Space) and type:
+5. Restart KRunner:
+   kquitapp6 krunner
+
+6. Test it! Open KRunner (Alt+Space) and type:
    katten Hello, how are you?
+
+### Method 3: Flatpak (Cross-Distribution)
+
+If a Flatpak is available:
+
+   flatpak install org.kde.katten.json
+   flatpak run org.kde.katten
+
+
+CONFIGURATION
+-------------
+
+### First-Run Setup
+
+Before using Katten, you MUST configure your Mistral AI API key:
+
+   katten-config
+
+This command will prompt you to enter your API key from:
+https://console.mistral.ai/api-keys
+
+### Configuration Options
+
+The katten-config tool allows you to:
+- Set your Mistral API key
+- Customize trigger keywords (e.g., ai, ask, chat)
+- Enable/disable web search by default
+- Select a default custom agent
+
+Configuration file location:
+  ~/.config/katten/config.json
 
 
 USAGE
@@ -127,80 +173,11 @@ Responses are displayed in a native preview panel with KDE Plasma integration:
 If PyQt6/PyQt5 is not available, kdialog is used as a fallback.
 
 
-CONFIGURATION
--------------
-Run the configuration tool to modify settings:
-   katten-config
-
-Options include:
-- Mistral API key
-- Trigger keywords (customize or reset to defaults)
-- Web search enabled/disabled by default
-- Default agent selection
-
-Config file location:
-  ~/.config/katten/config.json
-
-
-CONVERSATION HISTORY
---------------------
-All prompts and responses are automatically logged to an XML file:
-  ~/.config/katten/history.xml
-
-Each entry contains:
-- timestamp: ISO 8601 format (UTC)
-- prompt: Your question
-- web_search: "yes" or "no"
-- response: The AI's answer
-
-Example:
-  <?xml version="1.0" encoding="utf-8"?>
-  <history>
-    <entry>
-      <timestamp>2024-12-20T15:30:45.123456+00:00</timestamp>
-      <prompt>What is the capital of France?</prompt>
-      <web_search>yes</web_search>
-      <response>The capital of France is Paris.</response>
-    </entry>
-  </history>
-
-To disable logging, delete the history.xml file - it won't be recreated
-until you make another query.
-
-
-CUSTOMIZING KEYWORDS
---------------------
-To change the trigger keywords:
-
-1. Run: katten-config
-
-2. Select option 3 for custom keywords
-
-3. Enter your keywords separated by commas:
-   Example: ai, ask, chat
-
-4. Restart KRunner:
-   kquitapp6 krunner && kstart krunner
-
-
-CUSTOM ICON
------------
-The plugin comes with a custom SVG icon. To use your own:
-
-1. Create an SVG icon (or 128x128 PNG)
-2. Replace the file at:
-   ~/.local/share/katten/katten-icon.svg
-3. Also copy it to:
-   ~/.local/share/icons/hicolor/scalable/apps/katten-icon.svg
-4. Update the icon cache:
-   gtk-update-icon-cache -f ~/.local/share/icons/hicolor/
-
-
 TROUBLESHOOTING
 ---------------
 
 "API key not configured" error:
-  Run: krunner-lechat-config
+  Run: katten-config
   Enter your Mistral API key from console.mistral.ai
 
 Plugin not appearing in KRunner:
@@ -214,7 +191,7 @@ Plugin not appearing in KRunner:
   
   3. In another terminal, restart KRunner:
      kquitapp6 krunner
-
+  
   4. The plugin should auto-start when you open KRunner.
 
 Preview panel not showing blur:
@@ -231,14 +208,12 @@ Preview panel not showing blur:
 API errors (404, 400):
   - Verify your API key is valid at console.mistral.ai
   - Try disabling web search: katten noweb <question>
-  - Clear the cached agent: krunner-lechat-config
+  - Clear the cached agent: katten-config
 
-Responses not formatted:
-  - The markdown library is installed in the venv at:
-    ~/.local/share/katten/venv/
-  - If rendering fails, check /tmp/katten-panel.log for errors
-  - Try reinstalling the venv: rm -rf ~/.local/share/katten/venv/
-    then run ./install.sh again
+Markdown not rendering:
+  - Install python3-markdown: sudo apt install python3-markdown
+  - Without markdown, responses will show as plain text with a note
+  - Check /tmp/katten-panel.log for detailed errors
 
 
 UNINSTALLING
@@ -269,6 +244,19 @@ Note: The first time you use web search, the plugin creates a helper
 agent in your Mistral account called "Katten WebSearch".
 
 
+PACKAGING
+---------
+For distributors: Katten includes Debian packaging and Flatpak manifest.
+
+Debian/Ubuntu:
+  The debian/ directory contains standard Debian packaging files.
+  Dependencies: python3, python3-dbus, python3-gi, python3-pyqt6 | python3-pyqt5,
+               xclip | wl-copy, python3-markdown
+
+Flatpak:
+  See org.kde.katten.json for the Flatpak manifest.
+
+
 DISCLAIMER
 ----------
 Katten is an unofficial, community-developed plugin.
@@ -281,6 +269,6 @@ to Mistral AI's terms of service and usage policies.
 
 LICENSE
 -------
-MIT License - Feel free to modify and share.
+GPL-3.0+ - See the COPYING file or https://www.gnu.org/licenses/gpl-3.0.html
 
-Copyright (c) 2024 Emilio Longoria
+Copyright (c) 2026 Emilio Gonzalez Longoria
