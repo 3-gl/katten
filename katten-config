@@ -25,7 +25,7 @@ CONFIG_DIR  = Path.home() / ".config" / "katten"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 PLUGIN_DIR  = Path.home() / ".local" / "share" / "katten"
 
-DEFAULT_KEYWORDS = ["katten", "lechat", "lc", "mistral"]
+DEFAULT_KEYWORDS = ["katten", "lechat", "lc", "mistral", "vibe", "mv"]
 
 # ── ANSI colours ────────────────────────────────────────────────────────────
 R  = "\033[0;31m"
@@ -377,7 +377,8 @@ def main():
     print(f"   {Y}{primary_kw} agents{NC}               List API-created agents")
     print(f"   {Y}{primary_kw} clear agent{NC}          Clear the default agent")
     print()
-    print(f"   Trigger keywords : {', '.join(keywords)}")
+    print(f"   All trigger keywords : {', '.join(keywords)}")
+    print(f"   (You can use any of these to activate Katten)")
     print()
     print(f"   To restart KRunner:")
     print(f"   {Y}kquitapp6 krunner && kstart krunner{NC}")
