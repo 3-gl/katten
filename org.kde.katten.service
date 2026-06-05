@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.kde.katten
+Exec=/usr/bin/python3 %h/.local/share/katten/katten.py
