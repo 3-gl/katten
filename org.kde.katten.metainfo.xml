@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="addon">
+  <id>org.kde.katten</id>
+  <name>Katten</name>
+  <summary>Mistral AI Vibe integration for KRunner</summary>
+  <description>
+    <p>
+      Katten is a KDE Plasma KRunner plugin that allows you to send prompts 
+      to Mistral AI's Vibe service directly from KRunner (Alt+Space). 
+      It features a preview panel with full markdown rendering support for 
+      tables, code blocks, lists, and more.
+    </p>
+    <p>
+      Features:
+      <ul>
+        <li>Send prompts to Mistral AI directly from KRunner</li>
+        <li>Web search enabled by default (Vibe searches the internet)</li>
+        <li>Preview panel with full markdown rendering (tables, code blocks, lists, etc.)</li>
+        <li>Multiple trigger keywords: katten, lechat, lc, mistral, vibe, mv</li>
+        <li>Persistent loading notification</li>
+        <li>Fallback to simple API when web search fails</li>
+        <li>Warning message when fallback is used</li>
+        <li>Open conversation in browser</li>
+        <li>Copy responses to clipboard</li>
+        <li>XML conversation history logging</li>
+      </ul>
+    </p>
+  </description>
+  <categories>
+    <category>KDE</category>
+    <category>Plasma</category>
+    <category>KRunner</category>
+    <category>Utility</category>
+    <category>AI</category>
+  </categories>
+  <keywords>
+    <keyword>kde</keyword>
+    <keyword>plasma</keyword>
+    <keyword>krunner</keyword>
+    <keyword>ai</keyword>
+    <keyword>mistral</keyword>
+    <keyword>vibe</keyword>
+    <keyword>lechat</keyword>
+    <keyword>chat</keyword>
+    <keyword>assistant</keyword>
+  </keywords>
+  <url type="homepage">https://github.com/emilio-longoria/katten</url>
+  <url type="bugtracker">https://github.com/emilio-longoria/katten/issues</url>
+  <license>GPL-3.0+</license>
+  <project_license>GPL-3.0+</project_license>
+  <developer>
+    <name>Emilio Longoria</name>
+    <email>hej@emilio.dk</email>
+  </developer>
+  <requires>
+    <id compare="ge">org.kde.Platform</id>
+    <id compare="ge">org.kde.Sdk</id>
+  </requires>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/emilio-longoria/katten/master/katten-icon.svg</image>
+      <caption>Katten Plugin Icon</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.4.1" date="2026-06-06">
+      <description>
+        <p>Version 0.4.1 (Beta)</p>
+        <ul>
+          <li>Complete web search fallback warning implementation</li>
+          <li>Fixed DBus service file path expansion</li>
+          <li>Updated web search model</li>
+          <li>Improved error handling</li>
+          <li>Fallback to simple API when web search fails</li>
+          <li>Warning message displayed when fallback is used</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+</component>

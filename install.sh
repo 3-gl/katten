@@ -163,6 +163,11 @@ cp "$SCRIPT_DIR/katten.desktop" "$KRUNNER_DIR/"
 # Replace %h with actual home directory in the service file
 sed "s|%h|$HOME|g" "$SCRIPT_DIR/org.kde.katten.service" > "$DBUS_DIR/org.kde.katten.service"
 
+# AppStream metadata for Discover
+METAINFO_DIR="$HOME/.local/share/metainfo"
+mkdir -p "$METAINFO_DIR"
+cp "$SCRIPT_DIR/org.kde.katten.metainfo.xml" "$METAINFO_DIR/org.kde.katten.metainfo.xml"
+
 # Autostart configuration (so plugin starts automatically on login)
 AUTOSTART_DIR="$HOME/.config/autostart"
 mkdir -p "$AUTOSTART_DIR"

@@ -19,6 +19,8 @@ Description: KRunner plugin for Mistral AI Vibe
   * Preview panel with full markdown rendering (tables, code blocks, etc.)
   * Support for custom Mistral agents
   * Conversation history logged to XML
-  * Multiple trigger keywords: katten, lechat, lc, mistral
+  * Multiple trigger keywords: katten, lechat, lc, mistral, vibe, mv
+  * Fallback to simple API when web search fails
+  * Warning message when fallback is used
  .
  This plugin is unofficial and not affiliated with Mistral AI.
