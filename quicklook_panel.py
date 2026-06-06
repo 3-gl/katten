@@ -41,11 +41,11 @@ log = logging.getLogger("katten-panel")
 try:
     from PyQt6.QtWidgets import (
         QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-        QTextBrowser, QPushButton, QFrame, QStyleFactory,
+        QTextBrowser, QPushButton, QFrame, QLabel, QStyleFactory,
     )
     from PyQt6.QtCore import Qt, QUrl, QTimer
     from PyQt6.QtGui import (
-        QPalette, QIcon, QShortcut, QKeySequence, QDesktopServices,
+        QPalette, QIcon, QShortcut, QKeySequence, QDesktopServices, QColor,
     )
     PYQT_VERSION = 6
     WA_DeleteOnClose  = Qt.WidgetAttribute.WA_DeleteOnClose
@@ -62,11 +62,11 @@ except ImportError as e:
     try:
         from PyQt5.QtWidgets import (
             QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-            QTextBrowser, QPushButton, QFrame, QStyleFactory,
+            QTextBrowser, QPushButton, QFrame, QLabel, QStyleFactory,
         )
         from PyQt5.QtCore import Qt, QUrl, QTimer
         from PyQt5.QtGui import (
-            QPalette, QIcon, QShortcut, QKeySequence, QDesktopServices,
+            QPalette, QIcon, QShortcut, QKeySequence, QDesktopServices, QColor,
         )
         PYQT_VERSION = 5
         WA_DeleteOnClose  = Qt.WA_DeleteOnClose
@@ -237,11 +237,12 @@ def _request_blur(win_id: int):
 class PreviewPanel(QMainWindow):
 
     def __init__(self, title="Katten", content="", prompt="",
-                 url="https://chat.mistral.ai/"):
+                 url="https://chat.mistral.ai/", fallback_used=False):
         super().__init__()
         self._content = content
         self._prompt  = prompt
         self._url     = url
+        self._fallback_used = fallback_used
 
         self._setup_window(title)
         self._build_ui()
@@ -291,6 +292,52 @@ class PreviewPanel(QMainWindow):
         sep.setFrameShape(HLine)
         sep.setFrameShadow(Sunken)
         outer.addWidget(sep)
+
+        # Add warning label if fallback was used
+        if self._fallback_used:
+            self._warning_label = QLabel()
+            self._warning_label.setText("⚠️  Web search unavailable - answer generated using standard model")
+            self._warning_label.setWordWrap(True)
+            self._warning_label.setMargin(6)
+            
+            # Use native KDE Plasma styling - get system colors
+            pal = self._warning_label.palette()
+            
+            # Create a warning-styled appearance using system palette
+            if PYQT_VERSION == 6:
+                # Get the system's warning color (usually yellow/orange)
+                highlight_color = _pcol(QPalette.ColorRole.Highlight)
+                # Create a soft yellow background that complements both light and dark themes
+                # Use the highlight color as base but make it more yellow/orange
+                warning_bg = QColor(max(0, min(255, highlight_color.red() + 50)),
+                                  max(0, min(255, highlight_color.green() + 30)),
+                                  max(0, min(255, highlight_color.blue() - 30)))
+                # Ensure it's not too bright or too dark
+                if warning_bg.lightness() > 180:
+                    warning_bg = QColor(255, 220, 150)  # Light yellow for light themes
+                else:
+                    warning_bg = QColor(220, 180, 100)  # Slightly darker for dark themes
+                
+                pal.setColor(QPalette.ColorRole.Window, warning_bg)
+                pal.setColor(QPalette.ColorRole.WindowText, QColor(130, 70, 0))  # Dark orange text
+            else:
+                # PyQt5
+                highlight_color = _pcol(QPalette.Highlight)
+                warning_bg = QColor(max(0, min(255, highlight_color.red() + 50)),
+                                  max(0, min(255, highlight_color.green() + 30)),
+                                  max(0, min(255, highlight_color.blue() - 30)))
+                if warning_bg.lightness() > 180:
+                    warning_bg = QColor(255, 220, 150)
+                else:
+                    warning_bg = QColor(220, 180, 100)
+                
+                pal.setColor(QPalette.Window, warning_bg)
+                pal.setColor(QPalette.WindowText, QColor(130, 70, 0))
+            
+            self._warning_label.setPalette(pal)
+            self._warning_label.setAutoFillBackground(True)
+            self._warning_label.setFrameStyle(QFrame.Panel | QFrame.Raised)
+            outer.addWidget(self._warning_label)
 
         self._browser = QTextBrowser()
         self._browser.setOpenExternalLinks(True)
@@ -405,12 +452,14 @@ def main():
     parser.add_argument("--content", default="")
     parser.add_argument("--prompt",  default="")
     parser.add_argument("--url",     default="https://chat.mistral.ai/")
+    parser.add_argument("--fallback-used", action="store_true", default=False)
     args = parser.parse_args()
 
     title   = args.title
     content = args.content
     prompt  = args.prompt
     url     = args.url
+    fallback_used = args.fallback_used
 
     if args.response_file:
         log.info("loading response file: %s", args.response_file)
@@ -421,7 +470,8 @@ def main():
             content = data.get("content", content)
             prompt  = data.get("prompt",  prompt)
             url     = data.get("url",     url)
-            log.info("response file loaded ok, content_len=%d", len(content))
+            fallback_used = data.get("fallback_used", fallback_used)
+            log.info("response file loaded ok, content_len=%d, fallback_used=%s", len(content), fallback_used)
         except Exception as exc:
             log.exception("failed to load response file")
             content = f"**Error reading response:** {exc}"
@@ -451,7 +501,7 @@ def main():
     if icon_path.exists():
         app.setWindowIcon(QIcon(str(icon_path)))
 
-    panel = PreviewPanel(title=title, content=content, prompt=prompt, url=url)
+    panel = PreviewPanel(title=title, content=content, prompt=prompt, url=url, fallback_used=fallback_used)
     panel.show()
     log.info("panel.show() called")
 
