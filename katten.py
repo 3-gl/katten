@@ -60,7 +60,8 @@ DEFAULT_KEYWORDS = ["katten", "lechat", "lc", "mistral", "vibe", "mv"]
 DEFAULT_MODEL = "mistral-large-latest"
 
 # Model for web search agent
-WEB_SEARCH_MODEL = "mistral-medium-2505"
+# Updated to use current Mistral model with web search capability
+WEB_SEARCH_MODEL = "mistral-large-latest"
 
 # Maximum characters to show per result line
 MAX_LINE_LENGTH = 200
@@ -180,6 +181,12 @@ def get_or_create_websearch_agent():
         result, error = mistral_request(f"agents/{cached_id}")
         if not error and result:
             return cached_id, None
+        else:
+            # Agent doesn't exist or failed verification - clear the cache and log it
+            import logging
+            logging.warning(f"Cached web search agent {cached_id} failed verification: {error}")
+            config["websearch_agent_id"] = None
+            save_config(config)
     
     # Create a new web search agent using the agents endpoint
     agent_data = {
@@ -196,6 +203,8 @@ def get_or_create_websearch_agent():
     
     result, error = mistral_request("agents", method="POST", data=agent_data)
     if error:
+        import logging
+        logging.warning(f"Failed to create web search agent: {error}")
         return None, error
     
     agent_id = result.get("id")
@@ -204,6 +213,8 @@ def get_or_create_websearch_agent():
         save_config(config)
         return agent_id, None
     
+    import logging
+    logging.warning("Web search agent creation returned no ID")
     return None, "Failed to create web search agent"
 
 
@@ -312,6 +323,8 @@ def send_prompt(prompt, agent_id=None, use_web_search=True):
         ws_agent_id, error = get_or_create_websearch_agent()
         if error:
             # Fall back to simple prompt if web search agent fails
+            import logging
+            logging.warning(f"Web search agent creation failed, falling back to simple API: {error}")
             response, error = send_prompt_simple(prompt)
             fallback_used = True
             return response, error, None, fallback_used

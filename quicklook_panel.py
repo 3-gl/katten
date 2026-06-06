@@ -295,48 +295,9 @@ class PreviewPanel(QMainWindow):
 
         # Add warning label if fallback was used
         if self._fallback_used:
-            self._warning_label = QLabel()
-            self._warning_label.setText("⚠️  Web search unavailable - answer generated using standard model")
+            self._warning_label = QLabel("⚠️  Web search unavailable - answer generated using standard model")
             self._warning_label.setWordWrap(True)
-            self._warning_label.setMargin(6)
-            
-            # Use native KDE Plasma styling - get system colors
-            pal = self._warning_label.palette()
-            
-            # Create a warning-styled appearance using system palette
-            if PYQT_VERSION == 6:
-                # Get the system's warning color (usually yellow/orange)
-                highlight_color = _pcol(QPalette.ColorRole.Highlight)
-                # Create a soft yellow background that complements both light and dark themes
-                # Use the highlight color as base but make it more yellow/orange
-                warning_bg = QColor(max(0, min(255, highlight_color.red() + 50)),
-                                  max(0, min(255, highlight_color.green() + 30)),
-                                  max(0, min(255, highlight_color.blue() - 30)))
-                # Ensure it's not too bright or too dark
-                if warning_bg.lightness() > 180:
-                    warning_bg = QColor(255, 220, 150)  # Light yellow for light themes
-                else:
-                    warning_bg = QColor(220, 180, 100)  # Slightly darker for dark themes
-                
-                pal.setColor(QPalette.ColorRole.Window, warning_bg)
-                pal.setColor(QPalette.ColorRole.WindowText, QColor(130, 70, 0))  # Dark orange text
-            else:
-                # PyQt5
-                highlight_color = _pcol(QPalette.Highlight)
-                warning_bg = QColor(max(0, min(255, highlight_color.red() + 50)),
-                                  max(0, min(255, highlight_color.green() + 30)),
-                                  max(0, min(255, highlight_color.blue() - 30)))
-                if warning_bg.lightness() > 180:
-                    warning_bg = QColor(255, 220, 150)
-                else:
-                    warning_bg = QColor(220, 180, 100)
-                
-                pal.setColor(QPalette.Window, warning_bg)
-                pal.setColor(QPalette.WindowText, QColor(130, 70, 0))
-            
-            self._warning_label.setPalette(pal)
-            self._warning_label.setAutoFillBackground(True)
-            self._warning_label.setFrameStyle(QFrame.Panel | QFrame.Raised)
+            self._warning_label.setStyleSheet("QLabel { background-color: #fff3cd; color: #856404; padding: 8px; border: 1px solid #ffeeba; border-radius: 4px; }")
             outer.addWidget(self._warning_label)
 
         self._browser = QTextBrowser()
