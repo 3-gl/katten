@@ -23,7 +23,7 @@ try:
         QLabel, QLineEdit, QPushButton, QWidget, QSizePolicy,
     )
     from PyQt6.QtCore import Qt, QTimer
-    from PyQt6.QtGui import QIcon, QDesktopServices
+    from PyQt6.QtGui import QIcon, QDesktopServices, QFont, QPalette, QColor
     from PyQt6.QtCore import QUrl
     PYQT_VERSION = 6
     WA_DeleteOnClose = Qt.WidgetAttribute.WA_DeleteOnClose
@@ -39,7 +39,7 @@ except ImportError:
         QLabel, QLineEdit, QPushButton, QWidget, QSizePolicy,
     )
     from PyQt5.QtCore import Qt, QTimer, QUrl
-    from PyQt5.QtGui import QIcon, QDesktopServices
+    from PyQt5.QtGui import QIcon, QDesktopServices, QFont, QPalette, QColor
     PYQT_VERSION = 5
     WA_DeleteOnClose = Qt.WA_DeleteOnClose
     WindowType_Window = Qt.Window
@@ -109,7 +109,11 @@ class FirstRunPanel(QDialog):
         layout.setSpacing(16)
 
         # Title
-        title = QLabel("<b><big>Welcome to Katten!</big></b>")
+        title = QLabel("Welcome to Katten!")
+        title_font = QFont()
+        title_font.setBold(True)
+        title_font.setPointSize(title_font.pointSize() + 4)  # Larger size
+        title.setFont(title_font)
         title.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(title)
 
@@ -123,16 +127,25 @@ class FirstRunPanel(QDialog):
         layout.addWidget(desc)
 
         # Info about API key - left aligned and with hyperlink
-        info_text = (
-            "To access all features, you need a Mistral API key. "
-            "You can generate one at <a href='https://console.mistral.ai/api-keys'>console.mistral.ai/api-keys</a>."
-        )
+        info_part1 = "To access all features, you need a Mistral API key. "
+        info_part2 = "You can generate one at "
+        
+        # Create hyperlink using Qt rich text
+        url = "https://console.mistral.ai/api-keys"
+        link_text = f"<a href=\"{url}\">{url}</a>"
+        
+        info_text = info_part1 + info_part2 + link_text + "."
+        
         info = QLabel(info_text)
         info.setAlignment(Qt.AlignmentFlag.AlignLeft)
         info.setWordWrap(True)
         info.setMargin(8)
         info.setOpenExternalLinks(True)
-        info.setStyleSheet("font-size: small;")
+        
+        # Use QFont for smaller text size
+        info_font = info.font()
+        info_font.setPointSize(info_font.pointSize() - 1)  # Slightly smaller
+        info.setFont(info_font)
         layout.addWidget(info)
 
         # Spacer
@@ -196,7 +209,10 @@ class FirstRunPanel(QDialog):
         self._error_label = QLabel()
         self._error_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self._error_label.setWordWrap(True)
-        self._error_label.setStyleSheet("color: red;")
+        # Use QPalette for red text color
+        error_palette = self._error_label.palette()
+        error_palette.setColor(QPalette.ColorRole.Text, QColor("red"))
+        self._error_label.setPalette(error_palette)
         self._error_label.setVisible(False)
         self._error_label.setMinimumHeight(20)
         layout.addWidget(self._error_label)
@@ -224,12 +240,7 @@ class FirstRunPanel(QDialog):
         self._save_btn.setMinimumHeight(36)
         self._save_btn.setEnabled(False)  # Disabled until API key is entered
         
-        # Make it primary button (blue accent on KDE Breeze)
-        if PYQT_VERSION == 6:
-            self._save_btn.setStyleSheet("QPushButton { background-color: #3daee9; color: white; border: none; padding: 8px; border-radius: 4px; } QPushButton:disabled { background-color: #e0e0e0; color: #999999; }")
-        else:
-            self._save_btn.setStyleSheet("QPushButton { background-color: #3daee9; color: white; border: none; padding: 8px; border-radius: 4px; } QPushButton:disabled { background-color: #e0e0e0; color: #999999; }")
-        
+        # Button will follow system theme (Breeze will style it appropriately on KDE)
         buttons.addWidget(self._save_btn)
 
         buttons.addStretch()
@@ -239,9 +250,11 @@ class FirstRunPanel(QDialog):
         layout.addSpacing(12)
         
         # Bottom info
-        bottom_info = QLabel(
-            "<small><i>You can also run 'katten-config' from the terminal anytime.</i></small>"
-        )
+        bottom_info = QLabel("You can also run 'katten-config' from the terminal anytime.")
+        bottom_font = bottom_info.font()
+        bottom_font.setPointSize(bottom_font.pointSize() - 1)  # Slightly smaller
+        bottom_font.setItalic(True)
+        bottom_info.setFont(bottom_font)
         bottom_info.setAlignment(Qt.AlignmentFlag.AlignCenter)
         bottom_info.setMargin(8)
         layout.addWidget(bottom_info)
@@ -272,7 +285,11 @@ class FirstRunPanel(QDialog):
     def _show_throbber(self, show=True):
         """Show or hide the throbber with animated dots."""
         if show:
-            self._throbber_label.setText("<i>Verifying API key...</i>")
+            self._throbber_label.setText("Verifying API key...")
+            # Set italic font
+            throbber_font = self._throbber_label.font()
+            throbber_font.setItalic(True)
+            self._throbber_label.setFont(throbber_font)
             self._throbber_label.setVisible(True)
             # Start animation
             self._throbber_dots = 0
@@ -287,7 +304,7 @@ class FirstRunPanel(QDialog):
     def _update_throbber(self):
         """Update the throbber animation."""
         dots = "." * (self._throbber_dots % 4)
-        self._throbber_label.setText(f"<i>Verifying API key{dots}</i>")
+        self._throbber_label.setText(f"Verifying API key{dots}")
         self._throbber_dots += 1
 
     def _validate_api_key(self, api_key):
@@ -371,7 +388,11 @@ class FirstRunPanel(QDialog):
             self.accept()
         else:
             # Show error and re-enable save button
-            self._error_label.setText(f"<small>{error_msg}</small>")
+            self._error_label.setText(error_msg)
+            # Set smaller font for error message
+            error_font = self._error_label.font()
+            error_font.setPointSize(error_font.pointSize() - 1)
+            self._error_label.setFont(error_font)
             self._error_label.setVisible(True)
             self._save_btn.setEnabled(True)
 
