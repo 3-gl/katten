@@ -18,7 +18,7 @@ from pathlib import Path
 try:
     from PyQt6.QtWidgets import (
         QApplication, QDialog, QVBoxLayout, QHBoxLayout,
-        QLabel, QLineEdit, QPushButton, QWidget,
+        QLabel, QLineEdit, QPushButton, QWidget, QSizePolicy,
     )
     from PyQt6.QtCore import Qt
     from PyQt6.QtGui import QIcon
@@ -28,10 +28,12 @@ try:
     WindowType_Close = Qt.WindowType.WindowCloseButtonHint
     Key_Return = Qt.Key.Key_Return
     Key_Enter = Qt.Key.Key_Enter
+    SizePolicy_Expanding = QSizePolicy.Policy.Expanding
+    SizePolicy_MinimumExpanding = QSizePolicy.Policy.MinimumExpanding
 except ImportError:
     from PyQt5.QtWidgets import (
         QApplication, QDialog, QVBoxLayout, QHBoxLayout,
-        QLabel, QLineEdit, QPushButton, QWidget,
+        QLabel, QLineEdit, QPushButton, QWidget, QSizePolicy,
     )
     from PyQt5.QtCore import Qt
     from PyQt5.QtGui import QIcon
@@ -41,6 +43,8 @@ except ImportError:
     WindowType_Close = Qt.WindowCloseButtonHint
     Key_Return = Qt.Key_Return
     Key_Enter = Qt.Key_Enter
+    SizePolicy_Expanding = QSizePolicy.Expanding
+    SizePolicy_MinimumExpanding = QSizePolicy.MinimumExpanding
 
 
 CONFIG_DIR = Path.home() / ".config" / "katten"
@@ -55,8 +59,8 @@ class FirstRunPanel(QDialog):
         self.setWindowTitle("Katten - First Run Setup")
         self.setWindowFlags(WindowType_Window | WindowType_Close)
         self.setAttribute(WA_DeleteOnClose, True)
-        self.setMinimumSize(480, 200)
-        self.resize(520, 220)
+        self.setMinimumSize(560, 400)
+        self.resize(600, 450)
 
         # Try to use plugin icon
         icon_path = Path.home() / ".local" / "share" / "katten" / "katten-icon.svg"
@@ -68,17 +72,18 @@ class FirstRunPanel(QDialog):
     def _setup_ui(self):
         """Build the dialog layout."""
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(14)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(16)
 
         # Title
-        title = QLabel("<b>Welcome to Katten!</b>")
+        title = QLabel("<b><big>Welcome to Katten!</big></b>")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
         # Description
         desc = QLabel(
-            "Katten connects KRunner to Mistral AI's Vibe service."
+            "Katten connects KRunner to Mistral AI's Vibe service. "
+            "You can ask questions and get answers directly from your desktop."
         )
         desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
         desc.setWordWrap(True)
@@ -91,10 +96,11 @@ class FirstRunPanel(QDialog):
         )
         info.setAlignment(Qt.AlignmentFlag.AlignCenter)
         info.setWordWrap(True)
+        info.setMargin(8)
         layout.addWidget(info)
 
         # Spacer
-        layout.addSpacing(12)
+        layout.addSpacing(16)
 
         # API Key label
         api_label = QLabel("Mistral API Key:")
@@ -107,30 +113,45 @@ class FirstRunPanel(QDialog):
         )
         self._api_input.setEchoMode(QLineEdit.EchoMode.Normal)
         self._api_input.returnPressed.connect(self._save_and_close)
+        self._api_input.setMinimumHeight(32)
+        self._api_input.setSizePolicy(SizePolicy_Expanding, SizePolicy_Expanding)
         layout.addWidget(self._api_input)
+        
+        # Add stretch to allow vertical expansion
+        layout.addStretch(1)
 
         # Buttons row
         buttons = QHBoxLayout()
-        buttons.setSpacing(12)
+        buttons.setSpacing(16)
+        buttons.addStretch()
 
         # Save button
         save_btn = QPushButton("Save & Continue")
         save_btn.clicked.connect(self._save_and_close)
         save_btn.setDefault(True)
+        save_btn.setSizePolicy(SizePolicy_MinimumExpanding, SizePolicy_Expanding)
+        save_btn.setMinimumHeight(36)
         buttons.addWidget(save_btn)
 
         # CLI Settings button
         cli_btn = QPushButton("Open CLI Settings")
         cli_btn.clicked.connect(self._open_cli_settings)
+        cli_btn.setSizePolicy(SizePolicy_MinimumExpanding, SizePolicy_Expanding)
+        cli_btn.setMinimumHeight(36)
         buttons.addWidget(cli_btn)
 
+        buttons.addStretch()
         layout.addLayout(buttons)
 
+        # Add a spacer before bottom info
+        layout.addSpacing(12)
+        
         # Bottom info
         bottom_info = QLabel(
             "<small><i>You can also run 'katten-config' from the terminal anytime.</i></small>"
         )
         bottom_info.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        bottom_info.setMargin(8)
         layout.addWidget(bottom_info)
 
     def _save_and_close(self):
@@ -149,7 +170,10 @@ class FirstRunPanel(QDialog):
                 CONFIG_FILE.chmod(0o600)
             except Exception as e:
                 # Non-blocking: show error but still close
-                from PyQt6.QtWidgets import QMessageBox
+                if PYQT_VERSION == 6:
+                    from PyQt6.QtWidgets import QMessageBox
+                else:
+                    from PyQt5.QtWidgets import QMessageBox
                 QMessageBox.warning(
                     self,
                     "Save Error",
@@ -185,7 +209,10 @@ class FirstRunPanel(QDialog):
                     continue
 
             # If we get here, no terminal worked - show message
-            from PyQt6.QtWidgets import QMessageBox
+            if PYQT_VERSION == 6:
+                from PyQt6.QtWidgets import QMessageBox
+            else:
+                from PyQt5.QtWidgets import QMessageBox
             QMessageBox.information(
                 self,
                 "Terminal Not Found",
