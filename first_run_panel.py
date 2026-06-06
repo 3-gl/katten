@@ -133,28 +133,6 @@ class FirstRunPanel(QDialog):
         desc.setWordWrap(True)
         layout.addWidget(desc)
 
-        # Info about API key - left aligned and with hyperlink
-        info_part1 = "To access all features, you need a Mistral API key. "
-        info_part2 = "You can generate one at "
-        
-        # Create hyperlink using Qt rich text
-        url = "https://console.mistral.ai/api-keys"
-        link_text = f"<a href=\"{url}\">{url}</a>"
-        
-        info_text = info_part1 + info_part2 + link_text + "."
-        
-        info = QLabel(info_text)
-        info.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        info.setWordWrap(True)
-        info.setMargin(8)
-        info.setOpenExternalLinks(True)
-        
-        # Use QFont for smaller text size based on app theme
-        info_font = self._base_font
-        info_font.setPointSize(info_font.pointSize() - 1)  # Slightly smaller
-        info.setFont(info_font)
-        layout.addWidget(info)
-
         # Spacer
         layout.addSpacing(16)
 
@@ -491,6 +469,8 @@ def show_first_run_panel():
         existing = FirstRunPanel._instance
         existing.raise_()
         existing.activateWindow()
+        existing.show()  # Ensure it's visible
+        existing.setFocus()  # Bring to front
         return False
 
     panel = FirstRunPanel()
