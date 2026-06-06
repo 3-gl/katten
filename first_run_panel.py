@@ -17,6 +17,13 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 
+# Import KWallet functions from katten module
+try:
+    from katten import save_api_key
+except ImportError:
+    # Fallback to local implementation if katten module not available
+    save_api_key = None
+
 # Try PyQt6 first, fall back to PyQt5
 try:
     from PyQt6.QtWidgets import (
@@ -408,8 +415,17 @@ class FirstRunPanel(QDialog):
             self._save_btn.setEnabled(True)
 
     def _save_config(self, api_key):
-        """Save the API key to config file."""
+        """Save the API key using KWallet or config file."""
         if api_key:
+            # Try to use the save_api_key function from katten module
+            if save_api_key is not None:
+                try:
+                    if save_api_key(api_key):
+                        return  # Successfully saved
+                except Exception:
+                    pass  # Fall back to local implementation
+            
+            # Local fallback implementation
             CONFIG_DIR.mkdir(parents=True, exist_ok=True)
             config = {"api_key": api_key}
             
