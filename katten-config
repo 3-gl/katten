@@ -18,6 +18,15 @@ import time
 import threading
 import subprocess
 from pathlib import Path
+
+# Import KWallet functions from katten module
+try:
+    # Add the current directory to path so we can import katten
+    sys.path.insert(0, str(Path(__file__).parent))
+    from katten import save_api_key
+    KWALLET_AVAILABLE = True
+except ImportError:
+    KWALLET_AVAILABLE = False
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 
@@ -294,7 +303,19 @@ def main():
         offer_uninstall()
         sys.exit(0)
 
-    config["api_key"] = validated_key
+    # Save API key using KWallet or config file
+    if KWALLET_AVAILABLE and validated_key:
+        try:
+            if not save_api_key(validated_key):
+                # User cancelled, don't save to config either
+                print(f"   {Y}Setup cancelled.{NC}")
+                offer_uninstall()
+                sys.exit(0)
+        except Exception:
+            # Fall back to config file
+            config["api_key"] = validated_key
+    else:
+        config["api_key"] = validated_key
     print()
 
     # ── 2. TRIGGER KEYWORDS ─────────────────────────────────────────────────
