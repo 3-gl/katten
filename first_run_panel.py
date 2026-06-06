@@ -92,6 +92,13 @@ class FirstRunPanel(QDialog):
         self._validation_in_progress = False
         self._api_valid = False
         
+        # Get application font for theme inheritance
+        app = QApplication.instance()
+        if app:
+            self._base_font = app.font()
+        else:
+            self._base_font = QFont()
+        
         # Register this instance
         FirstRunPanel._instance = self
         
@@ -110,7 +117,7 @@ class FirstRunPanel(QDialog):
 
         # Title
         title = QLabel("Welcome to Katten!")
-        title_font = QFont()
+        title_font = self._base_font
         title_font.setBold(True)
         title_font.setPointSize(title_font.pointSize() + 4)  # Larger size
         title.setFont(title_font)
@@ -142,8 +149,8 @@ class FirstRunPanel(QDialog):
         info.setMargin(8)
         info.setOpenExternalLinks(True)
         
-        # Use QFont for smaller text size
-        info_font = info.font()
+        # Use QFont for smaller text size based on app theme
+        info_font = self._base_font
         info_font.setPointSize(info_font.pointSize() - 1)  # Slightly smaller
         info.setFont(info_font)
         layout.addWidget(info)
@@ -213,6 +220,10 @@ class FirstRunPanel(QDialog):
         error_palette = self._error_label.palette()
         error_palette.setColor(QPalette.ColorRole.Text, QColor("red"))
         self._error_label.setPalette(error_palette)
+        # Use app theme font
+        error_font = self._base_font
+        error_font.setPointSize(error_font.pointSize() - 1)
+        self._error_label.setFont(error_font)
         self._error_label.setVisible(False)
         self._error_label.setMinimumHeight(20)
         layout.addWidget(self._error_label)
@@ -251,7 +262,7 @@ class FirstRunPanel(QDialog):
         
         # Bottom info
         bottom_info = QLabel("You can also run 'katten-config' from the terminal anytime.")
-        bottom_font = bottom_info.font()
+        bottom_font = self._base_font
         bottom_font.setPointSize(bottom_font.pointSize() - 1)  # Slightly smaller
         bottom_font.setItalic(True)
         bottom_info.setFont(bottom_font)
@@ -286,8 +297,8 @@ class FirstRunPanel(QDialog):
         """Show or hide the throbber with animated dots."""
         if show:
             self._throbber_label.setText("Verifying API key...")
-            # Set italic font
-            throbber_font = self._throbber_label.font()
+            # Set italic font based on app theme
+            throbber_font = self._base_font
             throbber_font.setItalic(True)
             self._throbber_label.setFont(throbber_font)
             self._throbber_label.setVisible(True)
@@ -389,10 +400,7 @@ class FirstRunPanel(QDialog):
         else:
             # Show error and re-enable save button
             self._error_label.setText(error_msg)
-            # Set smaller font for error message
-            error_font = self._error_label.font()
-            error_font.setPointSize(error_font.pointSize() - 1)
-            self._error_label.setFont(error_font)
+            # Font is already set in _setup_ui, no need to set again
             self._error_label.setVisible(True)
             self._save_btn.setEnabled(True)
 
