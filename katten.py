@@ -317,6 +317,30 @@ def send_prompt(prompt, agent_id=None, use_web_search=True):
         # The conversation ID belongs to the API account, not the Vibe web
         # account, so we can't deep-link to it. Always open the Vibe home.
         conv_url = "https://chat.mistral.ai/"
+        
+        # Check if web search returned an apology/fallback message
+        # If so, retry with simple chat API (non-web search model)
+        if response and not error:
+            apology_phrases = [
+                "I'm sorry", "sorry, but", "couldn't retrieve", 
+                "couldn't find", "unable to", "failed to"
+            ]
+            if any(phrase.lower() in response.lower() for phrase in apology_phrases):
+                # Log the web search failure to a debug file
+                try:
+                    with open("/tmp/katten-debug.log", "a") as f:
+                        f.write(f"[{datetime.now()}] Web search failed for: '{prompt}'\n")
+                        f.write(f"Response: '{response[:200]}'\n")
+                        f.write(f"Falling back to simple API\n\n")
+                except Exception:
+                    pass
+                # Web search failed to get useful results, fall back to simple API
+                response, error = send_prompt_simple(prompt)
+                if error:
+                    # If simple also fails, return the web search response with error note
+                    return response, error, conv_url
+                return response, error, None
+        
         return response, error, conv_url
     
     response, error = send_prompt_simple(prompt)
