@@ -59,11 +59,11 @@ LOG_FILE = CONFIG_DIR / "history.xml"
 DEFAULT_KEYWORDS = ["katten", "lechat", "lc", "mistral", "vibe", "mv"]
 
 # Default model (used when web search is disabled)
-DEFAULT_MODEL = "mistral-large-latest"
+DEFAULT_MODEL = "mistral-medium-latest"
 
 # Model for web search agent
 # Updated to use current Mistral model with web search capability
-WEB_SEARCH_MODEL = "mistral-large-latest"
+WEB_SEARCH_MODEL = "mistral-medium-latest"
 
 # Maximum characters to show per result line
 MAX_LINE_LENGTH = 200
@@ -195,7 +195,17 @@ def get_or_create_websearch_agent():
         "model": WEB_SEARCH_MODEL,
         "name": "Katten WebSearch",
         "description": "Agent for Katten KRunner plugin with web search capability",
-        "instructions": "You are a helpful assistant with access to web search. When answering questions, use web search to find current and accurate information. Provide concise but complete answers.",
+        "instructions": (
+            "You are a helpful assistant who provides information to a user who is sending a query via a KRunner plugin. "
+            "Perform web searches when necessary to provide current and accurate information. "
+            "The user does not have the ability to answer back to you, so do not ask questions. "
+            "If you need more information, context or clarification from the user, you may describe what they need to include in a new prompt - "
+            "but do that as a last resort to avoid burdening the user with making a new attempt. "
+            "Whenever the user sends a prompt, it is sent to a new model without context of the user. "
+            "Therefore, your answers must be concise and informative - not conversational. "
+            "One prompt - one answer. So make the answer count! "
+            "Your answer will be displayed on a panel with support for markdown formatting."
+        ),
         "tools": [{"type": "web_search"}],
         "completion_args": {
             "temperature": 0.3,

@@ -237,8 +237,7 @@ This plugin uses the Mistral AI API which may incur costs depending on
 your usage. Check your usage and pricing at console.mistral.ai.
 
 The plugin uses:
-- mistral-medium-2505 model for web search queries
-- mistral-large-latest model for non-web queries
+- mistral-medium-latest model for both web search and non-web queries
 
 Note: The first time you use web search, the plugin creates a helper
 agent in your Mistral account called "Katten WebSearch".
