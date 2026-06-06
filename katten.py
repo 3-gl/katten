@@ -68,6 +68,108 @@ WEB_SEARCH_MODEL = "mistral-medium-latest"
 # Maximum characters to show per result line
 MAX_LINE_LENGTH = 200
 
+# KWallet constants
+KWALLET_SERVICE = "org.kde.kwalletd"
+KWALLET_OBJECT_PATH = "/modules/kwalletd"
+KWALLET_INTERFACE = "org.kde.KWallet"
+KWALLET_NAME = "katten"
+KWALLET_KEY = "mistral_api_key"
+
+
+class KWalletManager:
+    """Manage API key storage in KWallet with D-Bus."""
+    
+    def __init__(self):
+        self.bus = None
+        self.wallet_open = False
+        
+    def _get_kwallet_interface(self):
+        """Get the KWallet D-Bus interface."""
+        if self.bus is None:
+            try:
+                self.bus = dbus.SessionBus()
+            except Exception:
+                return None
+        
+        try:
+            kwallet_obj = self.bus.get_object(KWALLET_SERVICE, KWALLET_OBJECT_PATH)
+            return dbus.Interface(kwallet_obj, KWALLET_INTERFACE)
+        except Exception:
+            return None
+    
+    def is_available(self):
+        """Check if KWallet service is available."""
+        try:
+            # Check if the service is registered on the bus
+            bus = dbus.SessionBus()
+            bus.get_object(KWALLET_SERVICE, KWALLET_OBJECT_PATH)
+            return True
+        except Exception:
+            return False
+    
+    def read_api_key(self):
+        """Read API key from KWallet. Returns the key or None if not found/error."""
+        interface = self._get_kwallet_interface()
+        if interface is None:
+            return None
+        
+        try:
+            # ReadPassword(wallet, key, w_id)
+            password = interface.ReadPassword(KWALLET_NAME, KWALLET_KEY, 0)
+            if password and password != b"":
+                return password.decode('utf-8') if isinstance(password, bytes) else str(password)
+            return None
+        except dbus.exceptions.DBusException as e:
+            # Entry doesn't exist
+            if "does not exist" in str(e).lower() or "not found" in str(e).lower():
+                return None
+            logging.warning(f"Failed to read from KWallet: {e}")
+            return None
+        except Exception as e:
+            logging.warning(f"Failed to read from KWallet: {e}")
+            return None
+    
+    def write_api_key(self, api_key):
+        """Write API key to KWallet. Returns True if successful."""
+        interface = self._get_kwallet_interface()
+        if interface is None:
+            return False
+        
+        try:
+            # Ensure wallet is open
+            if not self.wallet_open:
+                if not self.open_wallet():
+                    return False
+            
+            # WritePassword(wallet, key, password, w_id)
+            interface.WritePassword(KWALLET_NAME, KWALLET_KEY, api_key, 0)
+            return True
+        except Exception as e:
+            logging.warning(f"Failed to write to KWallet: {e}")
+            return False
+    
+    def open_wallet(self):
+        """Open the KWallet wallet. Returns True if successful."""
+        interface = self._get_kwallet_interface()
+        if interface is None:
+            return False
+        
+        try:
+            # Open the wallet: wallet_name, w_id (window ID, 0 for CLI), window_title
+            interface.Open(KWALLET_NAME, 0, "Katten")
+            self.wallet_open = True
+            return True
+        except dbus.exceptions.DBusException as e:
+            # Wallet might already be open
+            if "already open" in str(e).lower():
+                self.wallet_open = True
+                return True
+            logging.warning(f"Failed to open KWallet: {e}")
+            return False
+        except Exception as e:
+            logging.warning(f"Failed to open KWallet: {e}")
+            return False
+
 
 def load_config():
     """Load configuration from file."""
@@ -93,6 +195,130 @@ def save_config(config):
         json.dump(config, f, indent=2)
 
 
+def show_kwallet_fallback_dialog():
+    """
+    Show a system dialog asking user what to do when KWallet is not available.
+    Returns: 'retry', 'config_file', or 'cancel'
+    """
+    try:
+        # Try PyQt6 first
+        try:
+            from PyQt6.QtWidgets import QApplication, QMessageBox
+            PYQT_VERSION = 6
+        except ImportError:
+            # Fall back to PyQt5
+            try:
+                from PyQt5.QtWidgets import QApplication, QMessageBox
+                PYQT_VERSION = 5
+            except ImportError:
+                # No Qt available, use native tools
+                return _show_kwallet_fallback_native()
+        
+        # Create application if it doesn't exist
+        app = QApplication.instance()
+        create_new_app = False
+        if app is None:
+            app = QApplication(sys.argv)
+            app.setApplicationName("Katten KWallet Setup")
+            create_new_app = True
+        
+        # Create dialog
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("KWallet Not Available")
+        msg_box.setText("KWallet service is not available for secure API key storage.")
+        msg_box.setInformativeText("How would you like to proceed?")
+        
+        # Add custom buttons
+        retry_btn = msg_box.addButton("Try Again", QMessageBox.ActionRole)
+        config_btn = msg_box.addButton("Use Config File", QMessageBox.ActionRole)
+        cancel_btn = msg_box.addButton("Cancel", QMessageBox.RejectRole)
+        
+        msg_box.setDefaultButton(retry_btn)
+        msg_box.setEscapeButton(cancel_btn)
+        
+        # Show dialog and get response
+        msg_box.exec()
+        
+        # Determine which button was clicked
+        clicked = msg_box.clickedButton()
+        
+        # Cleanup if we created the app
+        if create_new_app and app is not None:
+            app.quit()
+        
+        if clicked == retry_btn:
+            return "retry"
+        elif clicked == config_btn:
+            return "config_file"
+        else:
+            return "cancel"
+            
+    except Exception as e:
+        logging.warning(f"Failed to show Qt dialog: {e}")
+        return _show_kwallet_fallback_native()
+
+
+def _show_kwallet_fallback_native():
+    """Show fallback dialog using native tools (zenity/kdialog)."""
+    import subprocess
+    
+    # Try zenity (GNOME)
+    try:
+        result = subprocess.run([
+            "zenity", "--list", "--title=KWallet Not Available",
+            "--text=KWallet service is not available. How would you like to proceed?",
+            "--column=Option", "Try Again", "Use Config File", "Cancel"
+        ], capture_output=True, text=True, timeout=30)
+        
+        if result.returncode == 0:
+            choice = result.stdout.strip()
+            if choice == "Try Again":
+                return "retry"
+            elif choice == "Use Config File":
+                return "config_file"
+            else:
+                return "cancel"
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
+    
+    # Try kdialog (KDE)
+    try:
+        result = subprocess.run([
+            "kdialog", "--title=KWallet Not Available",
+            "--msgbox=KWallet service is not available. How would you like to proceed?",
+            "--yesno"
+        ], capture_output=True, text=True, timeout=30)
+        
+        # kdialog is limited for this use case, so fall back to simple text
+        return _show_kwallet_fallback_text()
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
+    
+    # Fall back to text-based
+    return _show_kwallet_fallback_text()
+
+
+def _show_kwallet_fallback_text():
+    """Show fallback dialog using text input."""
+    print("KWallet service is not available for secure API key storage.")
+    print("How would you like to proceed?")
+    print("1. Try Again")
+    print("2. Use Config File")
+    print("3. Cancel")
+    print("Enter your choice (1-3): ", end="")
+    
+    try:
+        choice = input().strip()
+        if choice == "1":
+            return "retry"
+        elif choice == "2":
+            return "config_file"
+        else:
+            return "cancel"
+    except (EOFError, KeyboardInterrupt):
+        return "cancel"
+
+
 def get_keywords():
     """Get trigger keywords from config."""
     config = load_config()
@@ -100,11 +326,100 @@ def get_keywords():
     return [kw.lower() for kw in keywords] if keywords else DEFAULT_KEYWORDS
 
 
-def get_api_key():
-    """Get API key from config or environment."""
+def get_api_key(_retrying=False):
+    """Get API key from KWallet, environment, or config file with fallback strategy.
+    
+    Args:
+        _retrying: Internal flag to prevent infinite recursion when retrying
+    
+    Returns:
+        API key string, or empty string if user cancelled
+    """
+    # Try KWallet first (preferred)
+    kwallet = KWalletManager()
+    
+    # Check if KWallet is available
+    if kwallet.is_available():
+        api_key = kwallet.read_api_key()
+        if api_key:
+            return api_key
+        # KWallet available but no key stored - fall through to other methods
+    else:
+        # KWallet not available - show fallback dialog (unless we're already retrying)
+        if not _retrying:
+            user_choice = show_kwallet_fallback_dialog()
+            
+            if user_choice == "retry":
+                # User wants to try again - give KWallet a moment to start
+                import time
+                time.sleep(1)  # Brief delay to allow KWallet to start
+                return get_api_key(_retrying=True)  # Recursive call with retry flag
+            elif user_choice == "cancel":
+                # User chose to cancel - return empty to disable Katten
+                return ""
+            # user_choice == "config_file" - fall through to config file method
+    
+    # Try environment variable next
+    api_key = os.environ.get("MISTRAL_API_KEY", "")
+    if api_key:
+        return api_key
+    
+    # Fall back to config file
     config = load_config()
-    api_key = config.get("api_key") or os.environ.get("MISTRAL_API_KEY", "")
-    return api_key
+    return config.get("api_key", "")
+
+
+def save_api_key(api_key, _retrying=False):
+    """Save API key to KWallet or config file with fallback strategy.
+    
+    Args:
+        api_key: The API key to save
+        _retrying: Internal flag to prevent infinite recursion
+    
+    Returns:
+        True if saved successfully, False otherwise
+    """
+    kwallet = KWalletManager()
+    
+    # Try KWallet first (preferred)
+    if kwallet.is_available():
+        if kwallet.write_api_key(api_key):
+            # Also save to config file for backwards compatibility
+            # (in case user switches away from KWallet later)
+            config = load_config()
+            config["api_key"] = api_key
+            save_config(config)
+            return True
+        else:
+            # KWallet failed, show fallback dialog (unless already retrying)
+            if not _retrying:
+                user_choice = show_kwallet_fallback_dialog()
+                
+                if user_choice == "retry":
+                    import time
+                    time.sleep(1)
+                    return save_api_key(api_key, _retrying=True)  # Retry with flag
+                elif user_choice == "cancel":
+                    return False  # Don't save
+                # user_choice == "config_file" - fall through
+    else:
+        # KWallet not available, show fallback dialog (unless already retrying)
+        if not _retrying:
+            user_choice = show_kwallet_fallback_dialog()
+            
+            if user_choice == "retry":
+                import time
+                time.sleep(1)
+                return save_api_key(api_key, _retrying=True)  # Retry with flag
+            elif user_choice == "cancel":
+                return False  # Don't save
+            # user_choice == "config_file" - fall through
+    
+    # Save to config file (fallback)
+    config = load_config()
+    config["api_key"] = api_key
+    save_config(config)
+    return True
 
 
 def get_icon():
