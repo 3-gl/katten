@@ -11,11 +11,13 @@ Supports web search and custom agents.
 
 This plugin is not affiliated with Mistral AI or its products.
 
-Version 0.4 (Beta):
+Version 0.4.1 (Beta):
 - Initial public release
-- Multiple trigger keywords (katten, lechat, lc, mistral)
+- Multiple trigger keywords (katten, lechat, lc, mistral, vibe, mv)
 - Preview panel with full markdown support (tables, code blocks)
 - Web search enabled by default
+- Fallback to simple API when web search fails
+- Warning message when fallback is used
 - Persistent loading notification
 - Opens conversation in default browser
 - XML conversation history logging

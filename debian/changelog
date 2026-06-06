@@ -1,6 +1,6 @@
-krunner-lechat (0.4~beta1-1) unstable; urgency=medium
+krunner-lechat (0.4.1~beta1-1) unstable; urgency=medium
 
-  * Version 0.4 (Beta) release
+  * Version 0.4.1 (Beta) release
   * Uses system python3-markdown instead of venv for better distribution support.
   * Full markdown rendering support (tables, code blocks, lists).
   * Web search enabled by default via Mistral API agents.
@@ -8,5 +8,9 @@ krunner-lechat (0.4~beta1-1) unstable; urgency=medium
   * Preview panel with KDE Plasma integration.
   * Auto-start on session login.
   * Rebranded from Le Chat to Vibe.
+  * Fallback to simple API when web search fails.
+  * Warning message displayed when fallback is used.
+  * Fixed DBus service file path expansion.
+  * Improved error handling and timeout management.
 
- -- Emilio Longoria <hej@emilio.dk>  Sat, 06 Jun 2026 00:00:00 +0000
+ -- Emilio Longoria <hej@emilio.dk>  Sat, 06 Jun 2026 13:00:00 +0000

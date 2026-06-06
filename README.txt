@@ -1,5 +1,5 @@
-Katten v0.4 (Beta)
-================
+Katten v0.4.1 (Beta)
+==================
 Unofficial Mistral Vibe plugin for KRunner
 
 Developed by Emilio Longoria.
