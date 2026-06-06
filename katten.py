@@ -134,7 +134,7 @@ def mistral_request(endpoint, method="GET", data=None):
         if data:
             req.data = json.dumps(data).encode("utf-8")
 
-        with urlopen(req, timeout=120) as response:
+        with urlopen(req, timeout=30) as response:
             return json.loads(response.read().decode("utf-8")), None
     except HTTPError as e:
         error_body = e.read().decode("utf-8") if e.fp else str(e)
@@ -293,18 +293,19 @@ def send_prompt_simple(prompt):
 
 def send_prompt(prompt, agent_id=None, use_web_search=True):
     """Send a prompt to Mistral AI.
-    Returns: (response_text, error, conversation_url)
+    Returns: (response_text, error, conversation_url, fallback_used)
     """
+    fallback_used = False
     config = load_config()
     
     # If user has a specific agent set, use that
     if agent_id:
         response, error = send_prompt_with_agent(prompt, agent_id)
-        return response, error, None
+        return response, error, None, fallback_used
     
     if config.get("default_agent_id"):
         response, error = send_prompt_with_agent(prompt, config["default_agent_id"])
-        return response, error, None
+        return response, error, None, fallback_used
     
     # Use web search if enabled
     if use_web_search and config.get("web_search_enabled", True):
@@ -312,7 +313,8 @@ def send_prompt(prompt, agent_id=None, use_web_search=True):
         if error:
             # Fall back to simple prompt if web search agent fails
             response, error = send_prompt_simple(prompt)
-            return response, error, None
+            fallback_used = True
+            return response, error, None, fallback_used
         response, error, conv_id = send_prompt_with_conversation(prompt, ws_agent_id)
         # The conversation ID belongs to the API account, not the Vibe web
         # account, so we can't deep-link to it. Always open the Vibe home.
@@ -336,15 +338,16 @@ def send_prompt(prompt, agent_id=None, use_web_search=True):
                     pass
                 # Web search failed to get useful results, fall back to simple API
                 response, error = send_prompt_simple(prompt)
+                fallback_used = True
                 if error:
                     # If simple also fails, return the web search response with error note
-                    return response, error, conv_url
-                return response, error, None
+                    return response, error, conv_url, fallback_used
+                return response, error, None, fallback_used
         
-        return response, error, conv_url
+        return response, error, conv_url, fallback_used
     
     response, error = send_prompt_simple(prompt)
-    return response, error, None
+    return response, error, None, fallback_used
 
 
 def open_browser_url(url: str, browser_name: str = None) -> tuple:
@@ -550,13 +553,16 @@ def show_loading_notification(prompt: str) -> int:
     )
 
 
-def show_preview_panel(title, content, prompt="", conversation_url=""):
+def show_preview_panel(title, content, prompt="", conversation_url="", fallback_used=False):
     """
     Launch the preview panel with the ready answer.
 
     The content is written to a temp file and its path passed to the panel
     rather than being put on the command line.  This avoids argument-length
     limits and shell-quoting issues that silently swallow the response text.
+    
+    Args:
+        fallback_used: True if web search failed and we fell back to simple API
     """
     panel_script = PLUGIN_DIR / "quicklook_panel.py"
 
@@ -582,6 +588,7 @@ def show_preview_panel(title, content, prompt="", conversation_url=""):
                 "content": content,
                 "prompt":  prompt,
                 "url":     conversation_url or "https://chat.mistral.ai/",
+                "fallback_used": fallback_used,
             }, fh)
     except Exception as exc:
         # Fallback: try kdialog with plain text
@@ -642,6 +649,7 @@ class Runner(dbus.service.Object):
         self.last_response = None
         self.last_prompt = None
         self.last_conversation_url = "https://chat.mistral.ai/"
+        self.last_fallback_used = False
 
     def _matches_keyword(self, query):
         """Check if query starts with any configured keyword."""
@@ -950,7 +958,8 @@ class Runner(dbus.service.Object):
             text   = self.last_response or parsed.get("text", "")
             prompt = self.last_prompt   or parsed.get("prompt", "")
             url    = self.last_conversation_url
-            show_preview_panel(f"Katten: {prompt[:50]}", text, prompt, url)
+            show_preview_panel(f"Katten: {prompt[:50]}", text, prompt, url, 
+                               fallback_used=self.last_fallback_used)
             return
 
         # Handle copy action
@@ -980,11 +989,12 @@ class Runner(dbus.service.Object):
             # Show persistent notification with indeterminate progress bar
             nid = show_loading_notification(prompt)
 
-            # Fetch the response (blocks until done)
-            response, error, conversation_url = send_prompt(prompt, use_web_search=use_web)
-
-            # Dismiss the loading notification now that we have the answer
-            _close_notification(nid)
+            try:
+                # Fetch the response (blocks until done)
+                response, error, conversation_url, fallback_used = send_prompt(prompt, use_web_search=use_web)
+            finally:
+                # Always dismiss the loading notification, even if send_prompt raises an exception
+                _close_notification(nid)
 
             if error:
                 _notify("Katten - Error", str(error)[:200],
@@ -993,6 +1003,7 @@ class Runner(dbus.service.Object):
                 self.last_response         = response
                 self.last_prompt           = prompt
                 self.last_conversation_url = conversation_url or "https://chat.mistral.ai/"
+                self.last_fallback_used    = fallback_used
 
                 # Log to XML history
                 log_conversation(prompt, response, use_web)
@@ -1002,6 +1013,7 @@ class Runner(dbus.service.Object):
                     response,
                     prompt,
                     self.last_conversation_url,
+                    fallback_used=self.last_fallback_used,
                 )
 
     def _launch_first_run_panel(self):
