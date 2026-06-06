@@ -12,6 +12,7 @@ Katten is distributed under the terms of the GNU General Public License v3.
 import sys
 import subprocess
 import json
+import time
 from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
@@ -52,6 +53,7 @@ except ImportError:
 
 CONFIG_DIR = Path.home() / ".config" / "katten"
 CONFIG_FILE = CONFIG_DIR / "config.json"
+LOCK_FILE = Path.home() / ".config" / "katten" / "first_run_panel.lock"
 
 # API validation constants
 TEST_PROMPT = (
@@ -59,6 +61,23 @@ TEST_PROMPT = (
     "Reply correctsetup if you are ready to receive more prompts. "
     "Do not reply anything other than correctsetup or error."
 )
+
+def _create_lock_file():
+    """Create a lock file to indicate panel is running."""
+    LOCK_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(LOCK_FILE, 'w') as f:
+        f.write(str(time.time()))
+
+def _remove_lock_file():
+    """Remove the lock file."""
+    try:
+        LOCK_FILE.unlink()
+    except FileNotFoundError:
+        pass
+
+def _is_panel_running():
+    """Check if a panel instance is already running."""
+    return LOCK_FILE.exists()
 
 
 class FirstRunPanel(QDialog):
@@ -97,16 +116,21 @@ class FirstRunPanel(QDialog):
         if app:
             self._base_font = app.font()
         else:
-            self._base_font = QFont()
+            # If no app instance, create one to get the system font
+            temp_app = QApplication(sys.argv)
+            self._base_font = temp_app.font()
+            temp_app.quit()
         
-        # Register this instance
+        # Register this instance and create lock file
         FirstRunPanel._instance = self
+        _create_lock_file()
         
         self._setup_ui()
 
     def closeEvent(self, event):
-        """Clean up singleton reference when dialog is closed."""
+        """Clean up singleton reference and lock file when dialog is closed."""
         FirstRunPanel._instance = None
+        _remove_lock_file()
         super().closeEvent(event)
 
     def _setup_ui(self):
@@ -117,7 +141,7 @@ class FirstRunPanel(QDialog):
 
         # Title
         title = QLabel("Welcome to Katten!")
-        title_font = self._base_font
+        title_font = QFont(self._base_font)  # Create a copy
         title_font.setBold(True)
         title_font.setPointSize(title_font.pointSize() + 4)  # Larger size
         title.setFont(title_font)
@@ -199,7 +223,7 @@ class FirstRunPanel(QDialog):
         error_palette.setColor(QPalette.ColorRole.Text, QColor("red"))
         self._error_label.setPalette(error_palette)
         # Use app theme font
-        error_font = self._base_font
+        error_font = QFont(self._base_font)  # Create a copy
         error_font.setPointSize(error_font.pointSize() - 1)
         self._error_label.setFont(error_font)
         self._error_label.setVisible(False)
@@ -240,9 +264,10 @@ class FirstRunPanel(QDialog):
         
         # Bottom info
         bottom_info = QLabel("You can also run 'katten-config' from the terminal anytime.")
-        bottom_font = self._base_font
+        bottom_font = QFont(self._base_font)  # Create a copy
         bottom_font.setPointSize(bottom_font.pointSize() - 1)  # Slightly smaller
         bottom_font.setItalic(True)
+        bottom_font.setBold(False)  # Ensure not bold
         bottom_info.setFont(bottom_font)
         bottom_info.setAlignment(Qt.AlignmentFlag.AlignCenter)
         bottom_info.setMargin(8)
@@ -276,7 +301,7 @@ class FirstRunPanel(QDialog):
         if show:
             self._throbber_label.setText("Verifying API key...")
             # Set italic font based on app theme
-            throbber_font = self._base_font
+            throbber_font = QFont(self._base_font)  # Create a copy
             throbber_font.setItalic(True)
             self._throbber_label.setFont(throbber_font)
             self._throbber_label.setVisible(True)
@@ -452,6 +477,20 @@ class FirstRunPanel(QDialog):
 
 def show_first_run_panel():
     """Show the first-run panel. Returns True if user saved a key, False otherwise."""
+    # Check for lock file first (works across processes)
+    if _is_panel_running():
+        # Try to bring existing instance to front
+        if FirstRunPanel._instance is not None:
+            try:
+                existing = FirstRunPanel._instance
+                existing.raise_()
+                existing.activateWindow()
+                existing.show()
+                existing.setFocus()
+            except Exception:
+                pass
+        return False
+    
     app = QApplication.instance()
     if app is None:
         app = QApplication(sys.argv)
@@ -463,15 +502,6 @@ def show_first_run_panel():
                 app.setStyle("Breeze")
         except Exception:
             pass
-
-    # Check for existing instance first
-    if FirstRunPanel._instance is not None:
-        existing = FirstRunPanel._instance
-        existing.raise_()
-        existing.activateWindow()
-        existing.show()  # Ensure it's visible
-        existing.setFocus()  # Bring to front
-        return False
 
     panel = FirstRunPanel()
     result = panel.exec()
