@@ -12,7 +12,6 @@ Katten is distributed under the terms of the GNU General Public License v3.
 import sys
 import subprocess
 import json
-import threading
 from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
@@ -64,8 +63,19 @@ TEST_PROMPT = (
 
 class FirstRunPanel(QDialog):
     """Simple first-run configuration dialog for entering Mistral API key."""
+    
+    # Class-level singleton tracking
+    _instance = None
 
     def __init__(self):
+        # Singleton pattern - prevent multiple instances
+        if FirstRunPanel._instance is not None:
+            # Bring existing instance to front
+            existing = FirstRunPanel._instance
+            existing.raise_()
+            existing.activateWindow()
+            return
+        
         super().__init__()
         self.setWindowTitle("Katten - First Run Setup")
         self.setWindowFlags(WindowType_Window | WindowType_Close)
@@ -82,7 +92,15 @@ class FirstRunPanel(QDialog):
         self._validation_in_progress = False
         self._api_valid = False
         
+        # Register this instance
+        FirstRunPanel._instance = self
+        
         self._setup_ui()
+
+    def closeEvent(self, event):
+        """Clean up singleton reference when dialog is closed."""
+        FirstRunPanel._instance = None
+        super().closeEvent(event)
 
     def _setup_ui(self):
         """Build the dialog layout."""
@@ -137,9 +155,33 @@ class FirstRunPanel(QDialog):
         # Paste button
         paste_btn = QPushButton("Paste")
         paste_btn.clicked.connect(self._paste_api_key)
-        paste_btn.setSizePolicy(SizePolicy_MinimumExpanding, QSizePolicy.Policy.Fixed)
+        
+        # Set icon following Freedesktop Icon Theme Specification
+        try:
+            # Try standard icon name first
+            paste_icon = QIcon.fromTheme("edit-paste")
+            if not paste_icon.isNull():
+                paste_btn.setIcon(paste_icon)
+            else:
+                # Fallback to trying to find the icon in common locations
+                icon_paths = [
+                    "/usr/share/icons/breeze/actions/16/edit-paste.svg",
+                    "/usr/share/icons/oxygen/16x16/actions/edit-paste.png",
+                    "/usr/share/icons/hicolor/16x16/actions/edit-paste.png",
+                    "/usr/share/icons/Adwaita/16x16/actions/edit-paste.png",
+                ]
+                for icon_path in icon_paths:
+                    if Path(icon_path).exists():
+                        paste_btn.setIcon(QIcon(icon_path))
+                        break
+        except Exception:
+            pass  # Continue without icon if there's an error
+        
+        # Make button only as wide as needed
+        paste_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         paste_btn.setMinimumHeight(32)
         paste_btn.setMaximumHeight(32)
+        paste_btn.setMinimumWidth(80)
         layout.addWidget(paste_btn)
 
         # Throbber (loading indicator)
@@ -262,7 +304,7 @@ class FirstRunPanel(QDialog):
         try:
             req = Request(url, method="POST", headers=headers)
             req.data = json.dumps(payload).encode()
-            with urlopen(req, timeout=30) as resp:
+            with urlopen(req, timeout=15) as resp:
                 data = json.loads(resp.read().decode())
                 choices = data.get("choices", [])
                 if not choices:
@@ -296,18 +338,25 @@ class FirstRunPanel(QDialog):
         self._validation_in_progress = True
         self._error_label.setVisible(False)
         
-        # Perform validation in a background thread to avoid freezing the UI
-        def validation_task():
-            try:
-                ok, error_msg = self._validate_api_key(api_key)
-                
-                # Use QTimer to update UI from main thread
-                QTimer.singleShot(0, lambda: self._complete_validation(ok, error_msg, api_key))
-            except Exception as e:
-                QTimer.singleShot(0, lambda: self._complete_validation(False, str(e), api_key))
+        # Set wait cursor to indicate processing
+        try:
+            if PYQT_VERSION == 6:
+                QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+            else:
+                QApplication.setOverrideCursor(Qt.WaitCursor)
+        except AttributeError:
+            # Fallback for older PyQt versions
+            QApplication.setOverrideCursor(Qt.WaitCursor)
         
-        # Start validation thread
-        threading.Thread(target=validation_task, daemon=True).start()
+        try:
+            # Perform validation synchronously (it's a one-time operation)
+            ok, error_msg = self._validate_api_key(api_key)
+            self._complete_validation(ok, error_msg, api_key)
+        except Exception as e:
+            self._complete_validation(False, str(e), api_key)
+        finally:
+            # Restore normal cursor
+            QApplication.restoreOverrideCursor()
 
     def _complete_validation(self, ok, error_msg, api_key):
         """Complete the validation process and update UI."""
