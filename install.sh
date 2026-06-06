@@ -162,6 +162,24 @@ cp "$SCRIPT_DIR/katten.desktop" "$KRUNNER_DIR/"
 # D-Bus service
 cp "$SCRIPT_DIR/org.kde.katten.service" "$DBUS_DIR/"
 
+# Autostart configuration (so plugin starts automatically on login)
+AUTOSTART_DIR="$HOME/.config/autostart"
+mkdir -p "$AUTOSTART_DIR"
+
+# Create autostart .desktop file
+cat > "$AUTOSTART_DIR/katten.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=Katten (Mistral Vibe)
+Comment=Start Katten KRunner plugin automatically
+Exec=python3 $PLUGIN_DIR/katten.py
+OnlyShowIn=KDE;
+NoDisplay=true
+StartupNotify=false
+Terminal=false
+EOF
+chmod +x "$AUTOSTART_DIR/katten.desktop"
+
 # Config tool
 cp "$SCRIPT_DIR/katten-config" "$BIN_DIR/"
 chmod +x "$BIN_DIR/katten-config"
@@ -199,3 +217,7 @@ echo
 echo "Then test in KRunner (Alt+Space):"
 echo -e "   ${YELLOW}katten Hello, how are you?${NC}"
 echo
+
+echo "IMPORTANT: For the plugin to work automatically on login:"
+echo -e "   ${YELLOW}Log out and log back in${NC} to activate the autostart configuration"
+echo "   (or restart your session)"

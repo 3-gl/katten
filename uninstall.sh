@@ -29,6 +29,7 @@ rm -rf ~/.local/share/katten
 rm -f ~/.local/share/icons/hicolor/128x128/apps/katten-icon.png
 rm -f ~/.local/share/icons/hicolor/scalable/apps/katten-icon.svg
 rm -f ~/.local/bin/katten-config
+rm -f ~/.config/autostart/katten.desktop
 
 echo -e "${GREEN}[OK]${NC} Plugin files removed"
 
