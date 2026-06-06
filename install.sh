@@ -160,7 +160,8 @@ fi
 cp "$SCRIPT_DIR/katten.desktop" "$KRUNNER_DIR/"
 
 # D-Bus service
-cp "$SCRIPT_DIR/org.kde.katten.service" "$DBUS_DIR/"
+# Replace %h with actual home directory in the service file
+sed "s|%h|$HOME|g" "$SCRIPT_DIR/org.kde.katten.service" > "$DBUS_DIR/org.kde.katten.service"
 
 # Autostart configuration (so plugin starts automatically on login)
 AUTOSTART_DIR="$HOME/.config/autostart"
