@@ -127,11 +127,12 @@ class FirstRunPanel(QDialog):
             "To access all features, you need a Mistral API key. "
             "You can generate one at <a href='https://console.mistral.ai/api-keys'>console.mistral.ai/api-keys</a>."
         )
-        info = QLabel(f"<small>{info_text}</small>")
+        info = QLabel(info_text)
         info.setAlignment(Qt.AlignmentFlag.AlignLeft)
         info.setWordWrap(True)
         info.setMargin(8)
         info.setOpenExternalLinks(True)
+        info.setStyleSheet("font-size: small;")
         layout.addWidget(info)
 
         # Spacer
@@ -455,6 +456,13 @@ def show_first_run_panel():
                 app.setStyle("Breeze")
         except Exception:
             pass
+
+    # Check for existing instance first
+    if FirstRunPanel._instance is not None:
+        existing = FirstRunPanel._instance
+        existing.raise_()
+        existing.activateWindow()
+        return False
 
     panel = FirstRunPanel()
     result = panel.exec()
