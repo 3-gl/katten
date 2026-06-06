@@ -1,10 +1,12 @@
-krunner-lechat (3.0~beta1-1) unstable; urgency=medium
+krunner-lechat (0.4~beta1-1) unstable; urgency=medium
 
-  * Initial release for Debian/Ubuntu.
+  * Version 0.4 (Beta) release
   * Uses system python3-markdown instead of venv for better distribution support.
   * Full markdown rendering support (tables, code blocks, lists).
   * Web search enabled by default via Mistral API agents.
-  * Multiple trigger keywords: katten, lechat, lc, mistral.
+  * Multiple trigger keywords: katten, lechat, lc, mistral, vibe, mv.
   * Preview panel with KDE Plasma integration.
+  * Auto-start on session login.
+  * Rebranded from Le Chat to Vibe.
 
- -- Emilio Longoria <emilio@longoria.dev>  Fri, 05 Jun 2026 23:00:00 +0000
+ -- Emilio Longoria <emilio@longoria.dev>  Sat, 06 Jun 2026 00:00:00 +0000

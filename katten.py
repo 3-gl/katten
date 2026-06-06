@@ -11,7 +11,7 @@ Supports web search and custom agents.
 
 This plugin is not affiliated with Mistral AI or its products.
 
-Version 3.0 beta:
+Version 0.4 (Beta):
 - Initial public release
 - Multiple trigger keywords (katten, lechat, lc, mistral)
 - Preview panel with full markdown support (tables, code blocks)

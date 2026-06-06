@@ -7,7 +7,7 @@ Comment=Send prompts to Mistral AI and get responses in KRunner - unofficial Vib
 Icon=katten-icon
 
 X-KDE-PluginInfo-Name=katten
-X-KDE-PluginInfo-Version=3.0-beta
+X-KDE-PluginInfo-Version=0.4-Beta
 X-KDE-PluginInfo-Author=Emilio Longoria
 X-KDE-PluginInfo-License=MIT
 X-KDE-PluginInfo-EnabledByDefault=true

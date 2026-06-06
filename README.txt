@@ -1,4 +1,4 @@
-Katten v3.0 beta
+Katten v0.4 (Beta)
 ================
 Unofficial Mistral Vibe plugin for KRunner
 
