@@ -21,22 +21,6 @@
     ],
     "modules": [
         {
-            "name": "python3-markdown",
-            "buildsystem": "simple",
-            "build-commands": ["pip3 install --prefix=/app markdown"],
-            "sources": [
-                {"type": "pip", "name": "markdown"}
-            ]
-        },
-        {
-            "name": "python3-pyqt6",
-            "buildsystem": "simple", 
-            "build-commands": ["pip3 install --prefix=/app PyQt6"],
-            "sources": [
-                {"type": "pip", "name": "PyQt6"}
-            ]
-        },
-        {
             "name": "katten",
             "buildsystem": "simple",
             "build-commands": [
