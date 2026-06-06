@@ -1,9 +1,9 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Katten
-Upstream-Contact: Emilio Longoria <emilio@longoria.dev>
+Upstream-Contact: Emilio Longoria <hej@emilio.dk>
 
 Files: *
-Copyright: 2026 Emilio González Longoria <emilio@longoria.dev>
+Copyright: 2026 Emilio González Longoria <hej@emilio.dk>
 License: GPL-3+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ License: GPL-3+
  along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 Files: debian/*
-Copyright: 2026 Emilio Longoria <emilio@longoria.dev>
+Copyright: 2026 Emilio Longoria <hej@emilio.dk>
 License: GPL-3+
 
 License: GPL-3+

@@ -1,7 +1,7 @@
 Source: krunner-lechat
 Section: kde
 Priority: optional
-Maintainer: Emilio Longoria <emilio@longoria.dev>
+Maintainer: Emilio Longoria <hej@emilio.dk>
 Build-Depends: debhelper (>= 11)
 Standards-Version: 4.6.0
 Homepage: https://github.com/emilio-longoria/katten
