@@ -56,6 +56,25 @@ PLUGIN_DIR = Path.home() / ".local" / "share" / "katten"
 ICON_PATH = PLUGIN_DIR / "katten-icon.svg"
 LOG_FILE = CONFIG_DIR / "history.xml"
 
+# First-run panel lock file helpers
+def _create_first_run_lock():
+    """Create lock file to prevent multiple first-run panels."""
+    FIRST_RUN_LOCK_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(FIRST_RUN_LOCK_FILE, 'w') as f:
+        f.write(str(datetime.now().isoformat()))
+
+def _remove_first_run_lock():
+    """Remove first-run panel lock file."""
+    try:
+        FIRST_RUN_LOCK_FILE.unlink()
+    except FileNotFoundError:
+        pass
+
+def _is_first_run_panel_running():
+    """Check if first-run panel is already running."""
+    return FIRST_RUN_LOCK_FILE.exists()
+
+
 # Default trigger keywords
 DEFAULT_KEYWORDS = ["katten", "lechat", "lc", "mistral", "vibe", "mv"]
 
@@ -68,6 +87,9 @@ WEB_SEARCH_MODEL = "mistral-medium-latest"
 
 # Maximum characters to show per result line
 MAX_LINE_LENGTH = 200
+
+# First-run panel lock file to prevent multiple instances
+FIRST_RUN_LOCK_FILE = CONFIG_DIR / "first_run_panel.lock"
 
 # KWallet constants
 KWALLET_SERVICE = "org.kde.kwalletd"
@@ -1444,6 +1466,13 @@ class Runner(dbus.service.Object):
 
     def _launch_first_run_panel(self):
         """Launch the first-run configuration panel as a separate process."""
+        # Check if a first-run panel is already running (cross-process check)
+        if _is_first_run_panel_running():
+            return  # Don't launch another instance
+        
+        # Create lock file to prevent multiple instances
+        _create_first_run_lock()
+        
         try:
             # Try to launch the first-run panel script
             panel_script = PLUGIN_DIR / "first_run_panel.py"
@@ -1464,6 +1493,8 @@ class Runner(dbus.service.Object):
                         stderr=subprocess.DEVNULL,
                     )
         except Exception as e:
+            # Clean up lock file on error
+            _remove_first_run_lock()
             # Log the error but don't block the plugin
             import logging
             logging.getLogger("katten").error(f"Failed to launch first-run panel: {e}")
