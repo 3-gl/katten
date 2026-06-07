@@ -28,6 +28,7 @@ Version 0.4.1 (Beta):
 import os
 import sys
 import json
+import logging
 import signal
 import subprocess
 from pathlib import Path
@@ -82,9 +83,13 @@ class KWalletManager:
     def __init__(self):
         self.bus = None
         self.wallet_open = False
+        self._interface = None
         
     def _get_kwallet_interface(self):
         """Get the KWallet D-Bus interface."""
+        if self._interface is not None:
+            return self._interface
+            
         if self.bus is None:
             try:
                 self.bus = dbus.SessionBus()
@@ -93,7 +98,8 @@ class KWalletManager:
         
         try:
             kwallet_obj = self.bus.get_object(KWALLET_SERVICE, KWALLET_OBJECT_PATH)
-            return dbus.Interface(kwallet_obj, KWALLET_INTERFACE)
+            self._interface = dbus.Interface(kwallet_obj, KWALLET_INTERFACE)
+            return self._interface
         except Exception:
             return None
     
@@ -105,6 +111,34 @@ class KWalletManager:
             bus.get_object(KWALLET_SERVICE, KWALLET_OBJECT_PATH)
             return True
         except Exception:
+            return False
+    
+    def _ensure_wallet_open(self):
+        """Ensure the wallet is open. Returns True if open or already open."""
+        if self.wallet_open:
+            return True
+        
+        interface = self._get_kwallet_interface()
+        if interface is None:
+            return False
+        
+        try:
+            # Open the wallet: wallet_name, w_id (window ID, 0 for CLI), window_title
+            interface.Open(KWALLET_NAME, 0, "Katten")
+            self.wallet_open = True
+            return True
+        except dbus.exceptions.DBusException as e:
+            # Wallet might already be open, or it doesn't exist yet
+            error_str = str(e).lower()
+            if "already open" in error_str:
+                self.wallet_open = True
+                return True
+            # If wallet doesn't exist, KWallet should create it automatically
+            # when we try to write to it, so just mark as open
+            self.wallet_open = True
+            return True
+        except Exception as e:
+            logging.warning(f"Failed to open KWallet: {e}")
             return False
     
     def read_api_key(self):
@@ -137,38 +171,33 @@ class KWalletManager:
         
         try:
             # Ensure wallet is open
-            if not self.wallet_open:
-                if not self.open_wallet():
-                    return False
+            if not self._ensure_wallet_open():
+                return False
             
             # WritePassword(wallet, key, password, w_id)
             interface.WritePassword(KWALLET_NAME, KWALLET_KEY, api_key, 0)
             return True
+        except dbus.exceptions.DBusException as e:
+            # If wallet doesn't exist, try to create it by opening first
+            error_str = str(e).lower()
+            if "does not exist" in error_str or "not found" in error_str:
+                # Wallet or key doesn't exist - try to open wallet first
+                if self._ensure_wallet_open():
+                    try:
+                        interface.WritePassword(KWALLET_NAME, KWALLET_KEY, api_key, 0)
+                        return True
+                    except Exception as e2:
+                        logging.warning(f"Failed to write to KWallet (after open): {e2}")
+                        return False
+            logging.warning(f"Failed to write to KWallet: {e}")
+            return False
         except Exception as e:
             logging.warning(f"Failed to write to KWallet: {e}")
             return False
     
     def open_wallet(self):
         """Open the KWallet wallet. Returns True if successful."""
-        interface = self._get_kwallet_interface()
-        if interface is None:
-            return False
-        
-        try:
-            # Open the wallet: wallet_name, w_id (window ID, 0 for CLI), window_title
-            interface.Open(KWALLET_NAME, 0, "Katten")
-            self.wallet_open = True
-            return True
-        except dbus.exceptions.DBusException as e:
-            # Wallet might already be open
-            if "already open" in str(e).lower():
-                self.wallet_open = True
-                return True
-            logging.warning(f"Failed to open KWallet: {e}")
-            return False
-        except Exception as e:
-            logging.warning(f"Failed to open KWallet: {e}")
-            return False
+        return self._ensure_wallet_open()
 
 
 def load_config():
@@ -193,6 +222,36 @@ def save_config(config):
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     with open(CONFIG_FILE, "w") as f:
         json.dump(config, f, indent=2)
+
+
+def migrate_to_kwallet():
+    """
+    Migrate API key from config.json to KWallet.
+    
+    Returns:
+        True if migration was successful, False otherwise
+    """
+    config = load_config()
+    api_key = config.get("api_key")
+    
+    if not api_key:
+        # No key to migrate
+        return False
+    
+    kwallet = KWalletManager()
+    
+    # Check if KWallet is available
+    if not kwallet.is_available():
+        return False
+    
+    # Try to write to KWallet
+    if kwallet.write_api_key(api_key):
+        # Successfully migrated - clear from config file
+        config["api_key"] = ""
+        save_config(config)
+        return True
+    
+    return False
 
 
 def show_kwallet_fallback_dialog():
@@ -229,9 +288,14 @@ def show_kwallet_fallback_dialog():
         msg_box.setInformativeText("How would you like to proceed?")
         
         # Add custom buttons
-        retry_btn = msg_box.addButton("Try Again", QMessageBox.ActionRole)
-        config_btn = msg_box.addButton("Use Config File", QMessageBox.ActionRole)
-        cancel_btn = msg_box.addButton("Cancel", QMessageBox.RejectRole)
+        if PYQT_VERSION == 6:
+            retry_btn = msg_box.addButton("Try Again", QMessageBox.ButtonRole.ActionRole)
+            config_btn = msg_box.addButton("Use Config File", QMessageBox.ButtonRole.ActionRole)
+            cancel_btn = msg_box.addButton("Cancel", QMessageBox.ButtonRole.RejectRole)
+        else:
+            retry_btn = msg_box.addButton("Try Again", QMessageBox.ActionRole)
+            config_btn = msg_box.addButton("Use Config File", QMessageBox.ActionRole)
+            cancel_btn = msg_box.addButton("Cancel", QMessageBox.RejectRole)
         
         msg_box.setDefaultButton(retry_btn)
         msg_box.setEscapeButton(cancel_btn)
@@ -246,7 +310,10 @@ def show_kwallet_fallback_dialog():
         if create_new_app and app is not None:
             app.quit()
         
-        if clicked == retry_btn:
+        # Handle case where no button was clicked (dialog closed)
+        if clicked is None:
+            return "cancel"
+        elif clicked == retry_btn:
             return "retry"
         elif clicked == config_btn:
             return "config_file"
@@ -259,8 +326,29 @@ def show_kwallet_fallback_dialog():
 
 
 def _show_kwallet_fallback_native():
-    """Show fallback dialog using native tools (zenity/kdialog)."""
+    """Show fallback dialog using native tools (kdialog for KDE, zenity for GNOME)."""
     import subprocess
+    
+    # Try kdialog first (KDE - primary target for this plugin)
+    try:
+        result = subprocess.run([
+            "kdialog", "--title", "KWallet Not Available",
+            "--menu", "KWallet service is not available. How would you like to proceed?",
+            "1", "Try Again",
+            "2", "Use Config File", 
+            "3", "Cancel"
+        ], capture_output=True, text=True, timeout=30)
+        
+        if result.returncode == 0:
+            choice = result.stdout.strip()
+            if choice == "1":
+                return "retry"
+            elif choice == "2":
+                return "config_file"
+            else:
+                return "cancel"
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
     
     # Try zenity (GNOME)
     try:
@@ -278,19 +366,6 @@ def _show_kwallet_fallback_native():
                 return "config_file"
             else:
                 return "cancel"
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        pass
-    
-    # Try kdialog (KDE)
-    try:
-        result = subprocess.run([
-            "kdialog", "--title=KWallet Not Available",
-            "--msgbox=KWallet service is not available. How would you like to proceed?",
-            "--yesno"
-        ], capture_output=True, text=True, timeout=30)
-        
-        # kdialog is limited for this use case, so fall back to simple text
-        return _show_kwallet_fallback_text()
     except (FileNotFoundError, subprocess.TimeoutExpired):
         pass
     
@@ -343,7 +418,18 @@ def get_api_key(_retrying=False):
         api_key = kwallet.read_api_key()
         if api_key:
             return api_key
-        # KWallet available but no key stored - fall through to other methods
+        
+        # KWallet available but no key stored - try to migrate from config file
+        config = load_config()
+        if config.get("api_key"):
+            # There's a key in config file but not in KWallet - try to migrate
+            if migrate_to_kwallet():
+                # Migration successful - try to read again
+                api_key = kwallet.read_api_key()
+                if api_key:
+                    return api_key
+        
+        # No key in KWallet - fall through to other methods
     else:
         # KWallet not available - show fallback dialog (unless we're already retrying)
         if not _retrying:
