@@ -93,7 +93,12 @@ FIRST_RUN_LOCK_FILE = CONFIG_DIR / "first_run_panel.lock"
 
 # KWallet constants
 KWALLET_SERVICE = "org.kde.kwalletd"
-KWALLET_OBJECT_PATH = "/modules/kwalletd"
+# Try multiple object paths for different KDE versions (Plasma 5 vs Plasma 6)
+KWALLET_OBJECT_PATHS = [
+    "/modules/kwalletd6",   # KDE Plasma 6
+    "/modules/kwalletd5",   # KDE Plasma 5
+    "/modules/kwalletd",    # Fallback/older versions
+]
 KWALLET_INTERFACE = "org.kde.KWallet"
 KWALLET_NAME = "katten"
 KWALLET_KEY = "mistral_api_key"
@@ -106,9 +111,11 @@ class KWalletManager:
         self.bus = None
         self.wallet_open = False
         self._interface = None
+        self._handle = None
+        self._working_object_path = None
         
     def _get_kwallet_interface(self):
-        """Get the KWallet D-Bus interface."""
+        """Get the KWallet D-Bus interface. Tries multiple object paths for compatibility."""
         if self._interface is not None:
             return self._interface
             
@@ -118,50 +125,77 @@ class KWalletManager:
             except Exception:
                 return None
         
-        try:
-            kwallet_obj = self.bus.get_object(KWALLET_SERVICE, KWALLET_OBJECT_PATH)
-            self._interface = dbus.Interface(kwallet_obj, KWALLET_INTERFACE)
-            return self._interface
-        except Exception:
-            return None
+        # Try all known object paths for different KDE versions
+        for object_path in KWALLET_OBJECT_PATHS:
+            try:
+                kwallet_obj = self.bus.get_object(KWALLET_SERVICE, object_path)
+                self._interface = dbus.Interface(kwallet_obj, KWALLET_INTERFACE)
+                # Store the working path for future use
+                self._working_object_path = object_path
+                return self._interface
+            except Exception:
+                continue
+        
+        return None
     
     def is_available(self):
         """Check if KWallet service is available."""
         try:
             # Check if the service is registered on the bus
             bus = dbus.SessionBus()
-            bus.get_object(KWALLET_SERVICE, KWALLET_OBJECT_PATH)
-            return True
+            # Try all known object paths
+            for object_path in KWALLET_OBJECT_PATHS:
+                try:
+                    bus.get_object(KWALLET_SERVICE, object_path)
+                    return True
+                except Exception:
+                    continue
+            return False
         except Exception:
             return False
     
     def _ensure_wallet_open(self):
-        """Ensure the wallet is open. Returns True if open or already open."""
-        if self.wallet_open:
-            return True
+        """Ensure the wallet is open. Returns handle if successful, None otherwise."""
+        if self._handle is not None:
+            return self._handle
         
         interface = self._get_kwallet_interface()
         if interface is None:
-            return False
+            return None
         
         try:
-            # Open the wallet: wallet_name, w_id (window ID, 0 for CLI), window_title
-            interface.Open(KWALLET_NAME, 0, "Katten")
+            # Try to open the wallet with the new KDE Plasma 6 API
+            # open(wallet, wId, appid) -> handle
+            handle = interface.open(KWALLET_NAME, 0, "Katten")
+            self._handle = int(handle)
             self.wallet_open = True
-            return True
+            return self._handle
         except dbus.exceptions.DBusException as e:
-            # Wallet might already be open, or it doesn't exist yet
             error_str = str(e).lower()
+            # Check if wallet is already open
             if "already open" in error_str:
+                # Try to get the handle for an already-open wallet
+                try:
+                    # If wallet is open, we need to get its handle
+                    # Check if it's open first
+                    is_open = interface.isOpen(KWALLET_NAME)
+                    if is_open:
+                        # Wallet is open but we don't have handle
+                        # Try to use a default handle of 1 (common for first wallet)
+                        self._handle = 1
+                        self.wallet_open = True
+                        return self._handle
+                except Exception:
+                    pass
+                # Fallback: assume handle 1
+                self._handle = 1
                 self.wallet_open = True
-                return True
-            # If wallet doesn't exist, KWallet should create it automatically
-            # when we try to write to it, so just mark as open
-            self.wallet_open = True
-            return True
+                return self._handle
+            logging.warning(f"Failed to open KWallet: {e}")
+            return None
         except Exception as e:
             logging.warning(f"Failed to open KWallet: {e}")
-            return False
+            return None
     
     def read_api_key(self):
         """Read API key from KWallet. Returns the key or None if not found/error."""
@@ -169,9 +203,15 @@ class KWalletManager:
         if interface is None:
             return None
         
+        # Get handle for the wallet
+        handle = self._ensure_wallet_open()
+        if handle is None:
+            return None
+        
         try:
-            # ReadPassword(wallet, key, w_id)
-            password = interface.ReadPassword(KWALLET_NAME, KWALLET_KEY, 0)
+            # Use new KDE Plasma 6 API: readPassword(handle, folder, key, appid)
+            # Try without folder first (empty string)
+            password = interface.readPassword(handle, "", KWALLET_KEY, "Katten")
             if password and password != b"":
                 return password.decode('utf-8') if isinstance(password, bytes) else str(password)
             return None
@@ -192,25 +232,28 @@ class KWalletManager:
             return False
         
         try:
-            # Ensure wallet is open
-            if not self._ensure_wallet_open():
+            # Get handle for the wallet
+            handle = self._ensure_wallet_open()
+            if handle is None:
                 return False
             
-            # WritePassword(wallet, key, password, w_id)
-            interface.WritePassword(KWALLET_NAME, KWALLET_KEY, api_key, 0)
-            return True
+            # Use new KDE Plasma 6 API: writePassword(handle, folder, key, value, appid)
+            # Folder is empty string for root-level entries
+            result = interface.writePassword(handle, "", KWALLET_KEY, api_key, "Katten")
+            # writePassword returns an integer status code (0 = success)
+            return result == 0
         except dbus.exceptions.DBusException as e:
-            # If wallet doesn't exist, try to create it by opening first
             error_str = str(e).lower()
+            # Try alternative: maybe we need to create the wallet first
             if "does not exist" in error_str or "not found" in error_str:
-                # Wallet or key doesn't exist - try to open wallet first
-                if self._ensure_wallet_open():
-                    try:
-                        interface.WritePassword(KWALLET_NAME, KWALLET_KEY, api_key, 0)
-                        return True
-                    except Exception as e2:
-                        logging.warning(f"Failed to write to KWallet (after open): {e2}")
-                        return False
+                try:
+                    handle = self._ensure_wallet_open()
+                    if handle is not None:
+                        result = interface.writePassword(handle, "", KWALLET_KEY, api_key)
+                        return result == 0
+                except Exception as e2:
+                    logging.warning(f"Failed to write to KWallet (after open): {e2}")
+                    return False
             logging.warning(f"Failed to write to KWallet: {e}")
             return False
         except Exception as e:
