@@ -29,12 +29,10 @@
                 "install -Dm755 first_run_panel.py /app/share/katten/first_run_panel.py",
                 "install -Dm644 katten-icon.svg /app/share/katten/katten-icon.svg",
                 "install -Dm644 katten-icon.svg /app/share/icons/hicolor/scalable/apps/katten-icon.svg",
-                "install -Dm644 katten-icon.png /app/share/katten/katten-icon.png",
                 "install -Dm644 katten.desktop /app/share/krunner/dbusplugins/katten.desktop",
                 "install -Dm644 org.kde.katten.service /app/share/dbus-1/services/org.kde.katten.service",
                 "install -Dm755 katten-config /app/bin/katten-config",
-                "install -Dm644 org.kde.katten.metainfo.xml /app/share/metainfo/org.kde.katten.metainfo.xml",
-                "install -Dm644 metadata.desktop /app/share/kservices5/krunner/plasma-runner-katten.desktop"
+                "install -Dm644 org.kde.katten.metainfo.xml /app/share/metainfo/org.kde.katten.metainfo.xml"
             ],
             "sources": [
                 {
@@ -67,15 +65,7 @@
                 },
                 {
                     "type": "file",
-                    "path": "katten-icon.png"
-                },
-                {
-                    "type": "file",
                     "path": "org.kde.katten.metainfo.xml"
-                },
-                {
-                    "type": "file",
-                    "path": "metadata.desktop"
                 }
             ]
         }
