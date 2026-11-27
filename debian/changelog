@@ -1,16 +1,15 @@
-krunner-lechat (0.4.1~beta1-1) unstable; urgency=medium
+katten (0.5.0-1) unstable; urgency=medium
 
-  * Version 0.4.1 (Beta) release
-  * Uses system python3-markdown instead of venv for better distribution support.
-  * Full markdown rendering support (tables, code blocks, lists).
-  * Web search enabled by default via Mistral API agents.
-  * Multiple trigger keywords: katten, lechat, lc, mistral, vibe, mv.
-  * Preview panel with KDE Plasma integration.
-  * Auto-start on session login.
-  * Rebranded from Le Chat to Vibe.
-  * Fallback to simple API when web search fails.
-  * Warning message displayed when fallback is used.
-  * Fixed DBus service file path expansion.
-  * Improved error handling and timeout management.
+  * Version 0.5.0: full rebuild as a Qt-native Kirigami application for
+    KDE Plasma 6.
+  * Multi-turn conversations via the Mistral Conversations API, stored
+    locally with owner-only permissions.
+  * Built-in Markdown renderer with tables, lists, links and SVG charts;
+    no third-party libraries beyond Qt 6 / KF 6.
+  * API key stored in KWallet (folder "Katten"), never in plain text.
+  * KRunner integration moved to a separate C++ plugin package
+    (katten-krunner) that talks to the app over D-Bus.
+  * British English and Danish translations.
+  * AppStream metainfo and desktop file for KDE Discover integration.
 
- -- Emilio Longoria <hej@emilio.dk>  Sat, 06 Jun 2026 13:00:00 +0000
+ -- Emilio González Longoria <hej@emilio.dk>  Fri, 27 Nov 2026 12:00:00 +0100

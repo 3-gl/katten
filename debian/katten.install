@@ -1,0 +1,7 @@
+usr/bin/katten
+usr/share/applications/org.kde.katten.desktop
+usr/share/metainfo/org.kde.katten.metainfo.xml
+usr/share/dbus-1/services/org.kde.katten.service
+usr/share/icons/hicolor/scalable/apps/org.kde.katten.svg
+usr/lib/*/qt6/qml/org/kde/katten/
+usr/share/locale/*/LC_MESSAGES/katten.mo

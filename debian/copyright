@@ -1,10 +1,11 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: Katten
-Upstream-Contact: Emilio Longoria <hej@emilio.dk>
+Upstream-Name: katten
+Upstream-Contact: Emilio González Longoria <hej@emilio.dk>
+Source: https://github.com/3-gl/katten
 
 Files: *
 Copyright: 2026 Emilio González Longoria <hej@emilio.dk>
-License: GPL-3+
+License: GPL-3.0-or-later
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -16,25 +17,7 @@ License: GPL-3+
  GNU General Public License for more details.
  .
  You should have received a copy of the GNU General Public License
- along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-Files: debian/*
-Copyright: 2026 Emilio Longoria <hej@emilio.dk>
-License: GPL-3+
-
-License: GPL-3+
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  .
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- .
- You should have received a copy of the GNU General Public License
- along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-Note: This plugin is unofficial and not affiliated with Mistral AI or its products.
-"Vibe" and "Mistral" are trademarks of Mistral AI.
+ On Debian systems, the complete text of the GNU General Public
+ License version 3 can be found in "/usr/share/common-licenses/GPL-3".
