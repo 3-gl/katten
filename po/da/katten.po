@@ -1,0 +1,166 @@
+# Danish translations for Katten.
+# Copyright (C) 2026 Emilio González Longoria <hej@emilio.dk>
+# This file is distributed under the same license as the Katten package.
+msgid ""
+msgstr ""
+"Project-Id-Version: katten 0.5.0\n"
+"Report-Msgid-Bugs-To: hej@emilio.dk\n"
+"POT-Creation-Date: 2026-11-27 12:00+0100\n"
+"PO-Revision-Date: 2026-11-27 12:00+0100\n"
+"Last-Translator: Emilio González Longoria <hej@emilio.dk>\n"
+"Language-Team: Danish <kde-i18n-da@kde.org>\n"
+"Language: da\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "@title"
+msgid "Katten"
+msgstr "Katten"
+
+msgctxt "@info"
+msgid "Unofficial Mistral Vibe client for KDE Plasma"
+msgstr "Uofficiel Mistral Vibe-klient til KDE Plasma"
+
+msgctxt "@info:credit"
+msgid "Emilio González Longoria"
+msgstr "Emilio González Longoria"
+
+msgctxt "@option"
+msgid "Prompt to send to Mistral Vibe"
+msgstr "Prompt, der skal sendes til Mistral Vibe"
+
+msgctxt "@info"
+msgid "Prompt to send to Mistral Vibe (same as --prompt)"
+msgstr "Prompt, der skal sendes til Mistral Vibe (samme som --prompt)"
+
+msgctxt "@title"
+msgid "New conversation"
+msgstr "Ny samtale"
+
+msgctxt "@info"
+msgid "No Mistral API key configured. Open Settings to store your API key in KWallet."
+msgstr "Ingen Mistral API-nøgle konfigureret. Åbn Indstillinger for at gemme din API-nøgle i KWallet."
+
+msgctxt "@info"
+msgid "Could not open KWallet. Is kwalletd running? The API key cannot be stored safely without it."
+msgstr "Kunne ikke åbne KWallet. Kører kwalletd? API-nøglen kan ikke gemmes sikkert uden den."
+
+msgctxt "@info"
+msgid "The API key is empty."
+msgstr "API-nøglen er tom."
+
+msgctxt "@info"
+msgid "Failed to write the API key to KWallet (error %1)."
+msgstr "Kunne ikke skrive API-nøglen til KWallet (fejl %1)."
+
+msgctxt "@info"
+msgid "Mistral API error (%1): %2"
+msgstr "Mistral API-fejl (%1): %2"
+
+msgctxt "@info"
+msgid "Vibe returned an empty response."
+msgstr "Vibe returnerede et tomt svar."
+
+msgctxt "@info:shell"
+msgid "Send the query to Katten (Mistral Vibe)"
+msgstr "Send forespørgslen til Katten (Mistral Vibe)"
+
+msgctxt "@action"
+msgid "Open Katten"
+msgstr "Åbn Katten"
+
+msgctxt "@info"
+msgid "Open the Katten window"
+msgstr "Åbn Katten-vinduet"
+
+msgctxt "@action"
+msgid "Ask Katten: %1"
+msgstr "Spørg Katten: %1"
+
+msgctxt "@info"
+msgid "Send this prompt to Mistral Vibe in the Katten window"
+msgstr "Send denne prompt til Mistral Vibe i Katten-vinduet"
+
+msgctxt "@info"
+msgid "Could not start Katten. Is the Katten application installed?"
+msgstr "Kunne ikke starte Katten. Er Katten-programmet installeret?"
+
+msgid "Ask Vibe…"
+msgstr "Spørg Vibe…"
+
+msgid "Ask Vibe anything. Answers support rich text: bold, lists, tables, links, code blocks and charts."
+msgstr "Spørg Vibe om hvad som helst. Svar understøtter rig tekst: fed skrift, lister, tabeller, links, kodeblokke og diagrammer."
+
+msgid "Clear"
+msgstr "Ryd"
+
+msgid "Copy to clipboard"
+msgstr "Kopiér til udklipsholder"
+
+msgid "Create a key at console.mistral.ai under “API keys”. The key is stored in the KWallet folder “Katten”. The MISTRAL_API_KEY environment variable is used as a fallback if no key is stored."
+msgstr "Opret en nøgle på console.mistral.ai under “API keys”. Nøglen gemmes i KWallet-mappen “Katten”. Miljøvariablen MISTRAL_API_KEY bruges som alternativ, hvis der ikke er gemt nogen nøgle."
+
+msgid "Delete conversation"
+msgstr "Slet samtale"
+
+msgid "Enable web search for new conversations"
+msgstr "Aktivér webbsøgning for nye samtaler"
+
+msgid "Mistral API key"
+msgstr "Mistral API-nøgle"
+
+msgid "Model"
+msgstr "Model"
+
+msgid "New conversation"
+msgstr "Ny samtale"
+
+msgid "No API key configured. Katten never stores your key in plain text — it is kept in KWallet."
+msgstr "Ingen API-nøgle konfigureret. Katten gemmer aldrig din nøgle som klartekst — den ligger i KWallet."
+
+msgid "No conversations yet"
+msgstr "Ingen samtaler endnu"
+
+msgid "No Mistral API key is configured. Open Settings to store your API key securely in KWallet."
+msgstr "Ingen Mistral API-nøgle er konfigureret. Åbn Indstillinger for at gemme din API-nøgle sikkert i KWallet."
+
+msgid "Open Settings"
+msgstr "Åbn Indstillinger"
+
+msgid "Paste your API key from console.mistral.ai"
+msgstr "Indsæt din API-nøgle fra console.mistral.ai"
+
+msgid "Reload list"
+msgstr "Genindlæs liste"
+
+msgid "Retry"
+msgstr "Prøv igen"
+
+msgid "Save in KWallet"
+msgstr "Gem i KWallet"
+
+msgid "Send"
+msgstr "Send"
+
+msgid "Settings"
+msgstr "Indstillinger"
+
+msgid "Settings…"
+msgstr "Indstillinger…"
+
+msgid "Thinking…"
+msgstr "Tænker…"
+
+msgid "Vibe"
+msgstr "Vibe"
+
+msgid "Vibe is thinking…"
+msgstr "Vibe tænker…"
+
+msgid "Web search uses Mistral's built-in web_search tool. It is applied when a conversation is created and cannot be changed afterwards."
+msgstr "Webbsøgning bruger Mistrals indbyggede web_search-værktøj. Det tilføjes, når en samtale oprettes, og kan ikke ændres bagefter."
+
+msgid "You"
+msgstr "Dig"

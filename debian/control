@@ -1,26 +1,55 @@
-Source: krunner-lechat
+Source: katten
 Section: kde
 Priority: optional
-Maintainer: Emilio Longoria <hej@emilio.dk>
-Build-Depends: debhelper (>= 11)
-Standards-Version: 4.6.0
-Homepage: https://github.com/emilio-longoria/katten
+Maintainer: Emilio González Longoria <hej@emilio.dk>
+Build-Depends: debhelper-compat (= 13),
+               cmake (>= 3.16),
+               extra-cmake-modules (>= 6.0~),
+               gettext,
+               qt6-base-dev (>= 6.6~),
+               qt6-declarative-dev (>= 6.6~),
+               qt6-svg-dev (>= 6.6~),
+               libkf6coreaddons-dev (>= 6.0~),
+               libkf6i18n-dev (>= 6.0~),
+               libkf6config-dev (>= 6.0~),
+               libkf6wallet-dev (>= 6.0~),
+               libkf6dbusaddons-dev (>= 6.0~),
+               libkf6iconthemes-dev (>= 6.0~),
+               libkirigami-dev (>= 6.0~),
+               libkf6runner-dev (>= 6.0~)
+Standards-Version: 4.7.2
+Homepage: https://github.com/3-gl/katten
 Rules-Requires-Root: no
 
-Package: krunner-lechat
-Architecture: all
-Depends: ${misc:Depends}, python3, python3-dbus, python3-gi, python3-pyqt6 | python3-pyqt5, xclip | wl-copy, python3-markdown
-Description: KRunner plugin for Mistral AI Vibe
- Katten is a KDE Plasma 6 KRunner plugin that allows you to send prompts
- to Mistral AI's Vibe service directly from KRunner (Alt+Space).
+Package: katten
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libkf6wallet6,
+         plasma-workspace,
+         qml6-module-org-kde-kirigami,
+         qml6-module-qtquick-controls
+Recommends: kwalletmanager
+Description: Unofficial Mistral Vibe client for KDE Plasma
+ Katten is a Qt-native Kirigami application for KDE Plasma 6 that lets you
+ chat with Mistral AI's Vibe using your own API key, without a web browser.
  .
  Features:
-  * Send prompts to Mistral AI with web search capability
-  * Preview panel with full markdown rendering (tables, code blocks, etc.)
-  * Support for custom Mistral agents
-  * Conversation history logged to XML
-  * Multiple trigger keywords: katten, lechat, lc, mistral, vibe, mv
-  * Fallback to simple API when web search fails
-  * Warning message when fallback is used
+  * Full multi-turn conversations via the Mistral Conversations API
+  * Rich-text answers (bold, lists, tables, links, code blocks, charts)
+  * Optional web search through Mistral's built-in web_search tool
+  * API key stored securely in KWallet, never in plain text
+  * Optional KRunner plugin in the separate katten-krunner package
  .
- This plugin is unofficial and not affiliated with Mistral AI.
+ Katten is not affiliated with Mistral AI. Using the Mistral API requires
+ an API key from console.mistral.ai and may incur costs.
+
+Package: katten-krunner
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         katten,
+         plasma-workspace
+Description: KRunner plugin for Katten (Mistral Vibe)
+ This package adds a KRunner plugin that sends prompts typed in KRunner
+ (Alt+Space), e.g. "katten <question>", to the Katten application over D-Bus.

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Katten
+GenericName=Mistral Vibe client
+Comment=Chat with Mistral Vibe in a native KDE Plasma interface
+Comment[da]=Chat med Mistral Vibe i en indbygget KDE Plasma-grænseflade
+Exec=katten
+Icon=org.kde.katten
+Terminal=false
+Categories=Qt;KDE;Network;Utility;
+Keywords=mistral;vibe;ai;chat;llm;
+StartupWMClass=katten
+X-KDE-FormFactors=desktop

@@ -1,0 +1,17 @@
+{
+    "KPlugin": {
+        "Id": "katten",
+        "Name": "Katten",
+        "Description": "Send prompts to Mistral Vibe from KRunner",
+        "Description[da]": "Send forespørgsler til Mistral Vibe fra KRunner",
+        "Icon": "org.kde.katten",
+        "License": "GPL-3.0-or-later",
+        "EnabledByDefault": true,
+        "Authors": [
+            {
+                "Name": "Emilio González Longoria",
+                "Email": "hej@emilio.dk"
+            }
+        ]
+    }
+}
